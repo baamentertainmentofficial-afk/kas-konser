@@ -1,5 +1,5 @@
-// Service Worker untuk PWA FinStage (v3)
-const CACHE_NAME = 'finstage-v3';
+// Service Worker untuk PWA FinStage (v4 - Cartoon Game UI)
+const CACHE_NAME = 'finstage-v4';
 const APP_SHELL = [
   './',
   './index.html',

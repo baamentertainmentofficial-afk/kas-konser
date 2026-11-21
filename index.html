@@ -3,195 +3,258 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#6366f1" />
+  <meta name="theme-color" content="#1b2a4a" />
   <title>FinStage — Powered by Baam Entertainment</title>
   <link rel="manifest" href="./manifest.json" />
   <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
   <link rel="apple-touch-icon" href="./icon-192.png" />
   <style>
     :root {
-      --bg: #eef2ff;
-      --surface: #ffffff;
-      --surface-2: #e2e8f0;
-      --text: #0f172a;
-      --muted: #475569;
-      --border: #1e293b;
-      --primary: #4f46e5;
-      --primary-shadow: #312e81;
-      --accent: #f59e0b;
-      --success: #16a34a;
-      --success-shadow: #14532d;
-      --warning: #ea580c;
-      --danger: #dc2626;
-      --radius: 12px;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme="light"]) {
-        --bg: #0b1020;
-        --surface: #151c32;
-        --surface-2: #1e293b;
-        --text: #f8fafc;
-        --muted: #94a3b8;
-        --border: #3b4b75;
-        --primary: #6366f1;
-        --primary-shadow: #3730a3;
-        --accent: #fbbf24;
-      }
-    }
-
-    :root[data-theme="dark"] {
-      --bg: #0b1020;
-      --surface: #151c32;
-      --surface-2: #1e293b;
+      --bg: #162442;
+      --bg-grad: linear-gradient(180deg, #1b2f58 0%, #101b33 100%);
+      --panel: #22355c;
+      --panel-dark: #172542;
+      --parchment: #f6e7c8;
+      --parchment-2: #ebd3a4;
+      --wood: #6e3f1d;
+      --wood-border: #2c180b;
       --text: #f8fafc;
-      --muted: #94a3b8;
-      --border: #3b4b75;
-      --primary: #6366f1;
-      --primary-shadow: #3730a3;
-      --accent: #fbbf24;
+      --text-ink: #2b1810;
+      --muted: #cbd5e1;
+      --muted-ink: #6b4c35;
+      --gold: #facc15;
+      --gold-dark: #ca8a04;
+      --emerald: #22c55e;
+      --emerald-dark: #15803d;
+      --sky: #38bdf8;
+      --danger: #ef4444;
+      --warning: #f97316;
+      --radius: 16px;
+    }
+
+    :root[data-theme="light"] {
+      --bg: #dbeafe;
+      --bg-grad: linear-gradient(180deg, #93c5fd 0%, #e0f2fe 100%);
+      --panel: #2a4375;
+      --panel-dark: #1e3159;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
       margin: 0;
-      font-family: "Segoe UI", Roboto, system-ui, sans-serif;
+      font-family: "Trebuchet MS", "Segoe UI", Roboto, system-ui, sans-serif;
       background: var(--bg);
+      background-image: var(--bg-grad);
+      background-attachment: fixed;
       color: var(--text);
-      line-height: 1.45;
-      padding-bottom: 88px;
+      line-height: 1.4;
+      padding-bottom: 92px;
     }
 
-    .container { max-width: 580px; margin: 0 auto; padding: 14px; }
+    .container { max-width: 580px; margin: 0 auto; padding: 12px; }
 
-    /* Arcade HUD Header */
+    /* Top Resource Bar + Game HUD */
     header.hud {
-      position: sticky; top: 0; z-index: 25;
-      background: var(--surface);
-      border-bottom: 3px solid var(--border);
-      padding: 10px 14px;
-      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      position: sticky; top: 0; z-index: 30;
+      background: linear-gradient(180deg, #324b80 0%, #1d2d50 100%);
+      border-bottom: 4px solid var(--wood-border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      padding: 8px 12px;
     }
-    .brand-title { font-size: 18px; font-weight: 900; letter-spacing: 0.4px; margin: 0; color: var(--primary); }
-    .brand-sub { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
-    .hud-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
-    .hud-chip {
-      font-size: 11px; font-weight: 800; padding: 4px 9px; border-radius: 8px;
-      border: 2px solid var(--border); background: var(--surface-2); color: var(--text);
-      cursor: pointer;
+    .hud-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .brand-title {
+      font-size: 20px; font-weight: 900; letter-spacing: 0.5px; color: var(--gold);
+      text-shadow: 0 2px 0 #2c180b, 0 0 8px rgba(250, 204, 21, 0.35);
+      line-height: 1.1;
     }
-    .hud-chip.lv { background: var(--primary); color: #fff; border-color: var(--primary-shadow); }
+    .brand-sub { font-size: 10px; font-weight: 700; color: #e2e8f0; text-transform: uppercase; letter-spacing: 0.6px; }
 
-    /* Quest / Inventory Cards */
-    .card {
-      background: var(--surface);
-      border: 2px solid var(--border);
-      box-shadow: 0 4px 0 var(--border);
-      border-radius: var(--radius);
-      padding: 15px;
-      margin-bottom: 14px;
+    .resource-bar {
+      display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: center;
     }
-    .card h2, .card h3 { margin: 0 0 10px; font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; }
+    .res-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: #101a30; border: 2px solid #476299; border-radius: 999px;
+      padding: 3px 9px; font-size: 11px; font-weight: 800; color: #fff;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .res-pill svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    .hud-btn {
+      font-size: 11px; font-weight: 800; padding: 4px 9px; border-radius: 10px;
+      border: 2px solid var(--wood-border); background: var(--gold); color: var(--text-ink);
+      box-shadow: 0 2px 0 var(--gold-dark); cursor: pointer;
+    }
+    .hud-btn.dark { background: #1e293b; color: #f8fafc; border-color: #475569; box-shadow: none; }
+
+    /* Kartu Gulungan Perkamen & Panel Navy */
+    .card {
+      background: var(--parchment);
+      color: var(--text-ink);
+      border: 3px solid var(--wood-border);
+      box-shadow: 0 5px 0 var(--wood), 0 8px 18px rgba(0,0,0,0.35);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .card.navy {
+      background: linear-gradient(180deg, var(--panel) 0%, var(--panel-dark) 100%);
+      color: #fff;
+      border-color: #0f172a;
+      box-shadow: 0 5px 0 #0b1222, 0 8px 18px rgba(0,0,0,0.4);
+    }
+    .card h2, .card h3 {
+      margin: 0 0 10px; font-size: 15px; font-weight: 900;
+      text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .card.navy h2, .card.navy h3 { color: var(--gold); text-shadow: 0 2px 0 #0f172a; }
 
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .stat-box {
-      background: var(--surface-2);
-      border: 2px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 12px;
+      background: var(--parchment-2);
+      border: 2px solid #b58d58;
+      border-radius: 12px;
+      padding: 9px 11px;
     }
-    .stat-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
-    .stat-val { font-size: 15px; font-weight: 800; margin-top: 2px; word-break: break-word; }
+    .card.navy .stat-box {
+      background: rgba(15, 23, 42, 0.55);
+      border-color: #476299;
+    }
+    .stat-label { font-size: 10px; font-weight: 800; color: var(--muted-ink); text-transform: uppercase; }
+    .card.navy .stat-label { color: #94a3b8; }
+    .stat-val { font-size: 15px; font-weight: 900; margin-top: 2px; word-break: break-word; }
 
-    /* HP / Mana Progress Bar */
-    .hp-wrap {
-      width: 100%; height: 14px; background: var(--bg);
-      border: 2px solid var(--border); border-radius: 8px;
-      overflow: hidden; margin: 8px 0 4px;
+    /* HP / XP Bars */
+    .game-bar-wrap {
+      width: 100%; height: 16px; background: #1e1b18;
+      border: 2.5px solid var(--wood-border); border-radius: 999px;
+      overflow: hidden; margin: 7px 0 4px; position: relative;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
     }
-    .hp-bar { height: 100%; background: var(--success); transition: width 0.35s ease; }
-    .hp-bar.mid { background: var(--accent); }
-    .hp-bar.low { background: var(--danger); animation: pulse 1.2s infinite; }
+    .game-bar {
+      height: 100%;
+      background: linear-gradient(180deg, #4ade80 0%, #16a34a 100%);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.45);
+      transition: width 0.35s ease;
+    }
+    .game-bar.mid { background: linear-gradient(180deg, #fde047 0%, #eab308 100%); }
+    .game-bar.low { background: linear-gradient(180deg, #f87171 0%, #dc2626 100%); animation: pulse 1s infinite; }
+    .game-bar.xp { background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%); }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 
     .alert {
-      padding: 10px 12px; border-radius: 10px; font-size: 13px; font-weight: 600;
-      margin-bottom: 12px; border: 2px solid;
+      padding: 10px 12px; border-radius: 12px; font-size: 13px; font-weight: 700;
+      margin-bottom: 12px; border: 2.5px solid var(--wood-border);
     }
-    .alert-danger { background: rgba(220, 38, 38, 0.14); border-color: var(--danger); color: var(--danger); }
-    .alert-info { background: rgba(99, 102, 241, 0.14); border-color: var(--primary); color: var(--primary); }
-    .alert-success { background: rgba(22, 163, 74, 0.14); border-color: var(--success); color: var(--success); }
-    .alert-warn { background: rgba(245, 158, 11, 0.16); border-color: var(--accent); color: var(--warning); }
+    .alert-danger { background: #fee2e2; color: #991b1b; }
+    .alert-info { background: #dbeafe; color: #1e40af; }
+    .alert-success { background: #dcfce7; color: #166534; }
+    .alert-warn { background: #fef3c7; color: #92400e; }
 
-    label { display: block; font-size: 12px; font-weight: 700; margin: 10px 0 4px; text-transform: uppercase; color: var(--muted); }
+    label { display: block; font-size: 11px; font-weight: 800; margin: 10px 0 4px; text-transform: uppercase; color: var(--muted-ink); }
+    .card.navy label { color: #cbd5e1; }
     input, select {
-      width: 100%; padding: 10px 12px; font-size: 15px;
-      border: 2px solid var(--border); border-radius: 10px;
-      background: var(--bg); color: var(--text); font-family: inherit;
+      width: 100%; padding: 10px 12px; font-size: 15px; font-weight: 600;
+      border: 2.5px solid #8c6239; border-radius: 10px;
+      background: #fffdf7; color: var(--text-ink); font-family: inherit;
     }
-    input:focus, select:focus { outline: none; border-color: var(--primary); }
+    input:focus, select:focus { outline: none; border-color: #2563eb; }
 
-    /* Tactile 3D Game Buttons */
+    /* Chunky Glossy Cartoon Game Buttons */
     .btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-      width: 100%; padding: 11px 16px; border: 2px solid var(--border); border-radius: 10px;
-      font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px;
-      cursor: pointer; background: var(--primary); color: #fff;
-      box-shadow: 0 3px 0 var(--primary-shadow); margin-top: 12px;
-      transition: transform 0.08s, box-shadow 0.08s;
+      width: 100%; padding: 12px 16px; border: 3px solid var(--wood-border); border-radius: 12px;
+      font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;
+      cursor: pointer; color: var(--text-ink);
+      background: linear-gradient(180deg, #fde047 0%, #eab308 100%);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), 0 4px 0 var(--gold-dark);
+      margin-top: 12px; transition: transform 0.08s, box-shadow 0.08s;
     }
-    .btn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--primary-shadow); }
+    .btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--gold-dark); }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-secondary { background: var(--surface-2); color: var(--text); box-shadow: 0 3px 0 var(--border); }
-    .btn-success { background: var(--success); color: #fff; box-shadow: 0 3px 0 var(--success-shadow); }
-    .btn-sm { padding: 6px 10px; font-size: 11px; width: auto; margin-top: 0; }
+    .btn-success {
+      color: #fff; text-shadow: 0 1px 0 #14532d;
+      background: linear-gradient(180deg, #4ade80 0%, #16a34a 100%);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.45), 0 4px 0 var(--emerald-dark);
+    }
+    .btn-secondary {
+      color: #fff;
+      background: linear-gradient(180deg, #475569 0%, #334155 100%);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.2), 0 4px 0 #0f172a;
+    }
+    .btn-sm { padding: 6px 10px; font-size: 11px; width: auto; margin-top: 0; border-width: 2px; }
 
-    .list-item { border-bottom: 1px dashed var(--border); padding: 11px 0; }
+    .list-item { border-bottom: 2px dashed #c7a979; padding: 10px 0; }
+    .card.navy .list-item { border-bottom-color: #364e82; }
     .list-item:last-child { border-bottom: none; padding-bottom: 0; }
     .row-between { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-    .muted { color: var(--muted); font-size: 12px; }
+    .muted { color: var(--muted-ink); font-size: 12px; }
+    .card.navy .muted { color: #cbd5e1; }
 
     .pill {
-      display: inline-block; font-size: 10px; font-weight: 800; text-transform: uppercase;
-      padding: 3px 8px; border-radius: 6px; border: 1.5px solid currentColor;
+      display: inline-block; font-size: 10px; font-weight: 900; text-transform: uppercase;
+      padding: 2px 8px; border-radius: 999px; border: 2px solid var(--wood-border);
     }
-    .pill-warn { color: var(--warning); background: rgba(234, 88, 12, 0.12); }
-    .pill-ok { color: var(--success); background: rgba(22, 163, 74, 0.12); }
-    .pill-kas { color: var(--primary); background: rgba(99, 102, 241, 0.12); }
+    .pill-warn { background: #fed7aa; color: #9a3412; }
+    .pill-ok { background: #bbf7d0; color: #166534; }
+    .pill-kas { background: #bfdbfe; color: #1e40af; }
+
+    .rank-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px; border-radius: 50%; font-size: 12px; font-weight: 900;
+      border: 2px solid var(--wood-border); flex-shrink: 0;
+    }
+    .rank-1 { background: #fde047; color: #2b1810; }
+    .rank-2 { background: #e2e8f0; color: #1e293b; }
+    .rank-3 { background: #fdba74; color: #431407; }
+    .rank-n { background: #334155; color: #fff; }
 
     .preview-img {
-      width: 100%; max-height: 210px; object-fit: contain;
-      border-radius: 10px; border: 2px solid var(--border);
-      margin-top: 8px; background: var(--surface-2);
+      width: 100%; max-height: 200px; object-fit: contain;
+      border-radius: 10px; border: 2.5px solid var(--wood-border);
+      margin-top: 8px; background: #1e293b;
     }
 
+    /* Bottom Game Dock */
     nav.bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 30;
-      background: var(--surface); border-top: 3px solid var(--border);
+      background: linear-gradient(180deg, #273c6b 0%, #15223e 100%);
+      border-top: 4px solid var(--wood-border);
       display: flex; justify-content: space-around;
       padding: 6px 4px env(safe-area-inset-bottom, 8px);
     }
     .nav-btn {
-      flex: 1; background: none; border: none; color: var(--muted);
+      flex: 1; background: none; border: none; color: #94a3b8;
       display: flex; flex-direction: column; align-items: center; gap: 2px;
-      font-size: 11px; font-weight: 800; padding: 5px 2px; cursor: pointer;
+      font-size: 11px; font-weight: 800; padding: 4px 2px; cursor: pointer;
     }
-    .nav-btn.active { color: var(--primary); }
-    .nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2.2; }
+    .nav-btn.active { color: var(--gold); transform: translateY(-2px); }
+    .nav-btn svg { width: 24px; height: 24px; }
+
+    /* Achievement Toast */
+    .toast-game {
+      position: fixed; top: 74px; left: 50%; transform: translateX(-50%);
+      z-index: 60; background: linear-gradient(180deg, #fde047 0%, #eab308 100%);
+      color: var(--text-ink); border: 3px solid var(--wood-border);
+      border-radius: 999px; padding: 8px 18px; font-size: 13px; font-weight: 900;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+      animation: popIn 0.25s ease;
+    }
+    @keyframes popIn { from { opacity: 0; transform: translate(-50%, -12px) scale(0.9); } to { opacity: 1; transform: translate(-50%, 0) scale(1); } }
 
     .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 50;
+      position: fixed; inset: 0; background: rgba(10, 15, 30, 0.75); z-index: 50;
       display: flex; align-items: center; justify-content: center; padding: 16px;
     }
     .modal-box { width: 100%; max-width: 450px; max-height: 90vh; overflow-y: auto; }
     .hidden { display: none !important; }
-    a.link { color: var(--primary); text-decoration: none; font-weight: 700; font-size: 12px; }
+    a.link { color: #1d4ed8; text-decoration: none; font-weight: 800; font-size: 12px; }
 
-    /* Print Area untuk Rekap LPJ PDF */
     #printArea { display: none; }
     @media print {
       body { background: #fff !important; color: #000 !important; padding: 0; }
-      header.hud, main.container, nav.bottom-nav, .modal-backdrop { display: none !important; }
+      header.hud, main.container, nav.bottom-nav, .modal-backdrop, .toast-game { display: none !important; }
       #printArea { display: block !important; font-family: Arial, sans-serif; padding: 16px; color: #000; }
       #printArea table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
       #printArea th, #printArea td { border: 1px solid #333; padding: 5px 6px; text-align: left; }
@@ -201,15 +264,34 @@
 </head>
 <body>
 
-  <!-- HUD Header -->
+  <!-- Achievement Toast -->
+  <div id="gameToast" class="toast-game hidden">QUEST COMPLETE! +25 XP</div>
+
+  <!-- Game HUD Header -->
   <header class="hud hidden" id="topbar">
-    <div>
-      <div class="brand-title">FinStage</div>
-      <div class="brand-sub">Powered by Baam Entertainment</div>
+    <div class="hud-top">
+      <div>
+        <div class="brand-title">FinStage</div>
+        <div class="brand-sub">Powered by Baam Entertainment</div>
+      </div>
+      <div style="display:flex; gap:5px; align-items:center;">
+        <button class="hud-btn dark" id="btnSound" title="Suara Efek Game">🔊</button>
+        <button class="hud-btn" id="btnSwitchEvent">Event</button>
+      </div>
     </div>
-    <div class="hud-right">
-      <button class="hud-chip" id="btnSwitchEvent" title="Ganti Event">Event: -</button>
-      <span class="hud-chip lv" id="roleBadge">-</span>
+    <div class="resource-bar">
+      <div class="res-pill" title="Sisa Kas">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#facc15" stroke="#854d0e" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="900" fill="#713f12">Rp</text></svg>
+        <span id="hudSisa">Rp 0</span>
+      </div>
+      <div class="res-pill" title="Dana Masuk / Modal">
+        <svg viewBox="0 0 24 24"><polygon points="12,2 22,9 18,21 6,21 2,9" fill="#38bdf8" stroke="#0369a1" stroke-width="2"/></svg>
+        <span id="hudModal">Rp 0</span>
+      </div>
+      <div class="res-pill" title="Belum Reimburs">
+        <svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.5 3.4 9.5 8 11 4.6-1.5 8-5.5 8-11V6l-8-4z" fill="#fb923c" stroke="#9a3412" stroke-width="2"/></svg>
+        <span id="hudReimb">Rp 0</span>
+      </div>
     </div>
   </header>
 
@@ -223,10 +305,10 @@
     </div>
 
     <!-- HALAMAN 1: LOGIN -->
-    <section id="viewLogin" class="card" style="margin-top: 20px;">
-      <div style="text-align: center; margin-bottom: 12px;">
-        <div class="brand-title" style="font-size: 24px;">FinStage</div>
-        <div class="brand-sub">Powered by Baam Entertainment</div>
+    <section id="viewLogin" class="card" style="margin-top: 24px;">
+      <div style="text-align: center; margin-bottom: 10px;">
+        <div class="brand-title" style="font-size: 28px; color: #6e3f1d; text-shadow: 0 2px 0 #fde047;">FinStage</div>
+        <div class="brand-sub" style="color: #6b4c35;">Powered by Baam Entertainment</div>
       </div>
       <div id="loginMsg"></div>
       <label for="loginEmail">Email</label>
@@ -237,18 +319,18 @@
         <label for="loginApiUrl">URL Web App Apps Script</label>
         <input type="url" id="loginApiUrl" placeholder="https://script.google.com/macros/s/.../exec" />
       </div>
-      <button class="btn" id="btnLogin">Mulai Sesi</button>
+      <button class="btn" id="btnLogin">Mulai Petualangan</button>
     </section>
 
     <!-- HALAMAN 2: PILIH EVENT -->
     <section id="viewEvents" class="hidden">
       <div class="card">
-        <h2>Pilih Event</h2>
-        <p class="muted">Pilih event yang ingin dikelola atau buat event baru (khusus Admin).</p>
+        <h2>Pilih Arena / Event</h2>
+        <p class="muted">Pilih event yang ingin dikelola atau buat event baru.</p>
         <div id="eventList">Memuat daftar event...</div>
       </div>
 
-      <div class="card hidden" id="cardNewEvent">
+      <div class="card navy hidden" id="cardNewEvent">
         <h3>+ Buat Event Baru (Admin)</h3>
         <div id="newEventMsg"></div>
         <label for="evtNama">Nama Event</label>
@@ -261,23 +343,42 @@
 
     <!-- TAB 1: BERANDA -->
     <section id="tabBeranda" class="hidden">
-      <div class="card" style="padding: 12px 15px;">
-        <div class="brand-title" style="font-size: 19px;">FinStage</div>
-        <div class="brand-sub">Powered by Baam Entertainment</div>
-        <div class="muted" id="lblEventAktif" style="margin-top: 4px; font-weight: 700;">-</div>
+      <!-- Kartu Profil Hero & Rank XP -->
+      <div class="card navy" style="padding: 12px 14px;">
+        <div class="row-between" style="align-items: center;">
+          <div style="display:flex; gap:10px; align-items:center;">
+            <svg viewBox="0 0 48 48" style="width:44px; height:44px; flex-shrink:0;">
+              <circle cx="24" cy="24" r="22" fill="#facc15" stroke="#2c180b" stroke-width="3"/>
+              <path d="M14 22l10-10 10 10v12H14V22z" fill="#4f46e5" stroke="#2c180b" stroke-width="2.5"/>
+              <circle cx="24" cy="24" r="5" fill="#fde047" stroke="#2c180b" stroke-width="2"/>
+            </svg>
+            <div>
+              <div style="font-weight: 900; font-size: 15px;" id="heroName">FinStage</div>
+              <div class="muted" style="font-size: 11px;" id="heroSub">Powered by Baam Entertainment</div>
+            </div>
+          </div>
+          <span class="pill" style="background:#fde047; color:#2b1810;" id="rankBadge">ROOKIE</span>
+        </div>
+        <div class="game-bar-wrap" style="height: 11px; margin-top: 8px;">
+          <div class="game-bar xp" id="xpBar" style="width: 20%;"></div>
+        </div>
+        <div class="row-between" style="font-size: 11px; color: #cbd5e1; font-weight: 700;">
+          <span id="lblEventAktif">Event: -</span>
+          <span id="xpText">0 XP</span>
+        </div>
       </div>
 
       <div id="warningSaldo" class="alert alert-danger hidden">
-        PERINGATAN: Sisa kas kurang dari 20%! Segera cek anggaran.
+        PERINGATAN HP KRITIS: Sisa kas kurang dari 20%!
       </div>
 
-      <!-- Ringkasan Utama -->
+      <!-- Gulungan Perkamen: Status Kas -->
       <div class="card">
-        <h2 id="judulRingkasan">Status Kas</h2>
+        <h2 id="judulRingkasan">Peti Kas Event</h2>
         <div class="stat-box" style="margin-bottom: 10px;">
           <div class="stat-label" id="lblSisaUtama">Sisa Kas</div>
           <div class="stat-val" id="valSisaUtama" style="font-size: 22px;">Rp 0</div>
-          <div class="hp-wrap"><div class="hp-bar" id="progBar" style="width: 100%;"></div></div>
+          <div class="game-bar-wrap"><div class="game-bar" id="progBar" style="width: 100%;"></div></div>
           <div class="muted" id="valPersen">0% terpakai</div>
         </div>
         <div class="grid-2">
@@ -297,30 +398,30 @@
           </div>
           <div class="stat-box">
             <div class="stat-label">Belum Direimburs</div>
-            <div class="stat-val" id="valBelumReimb" style="color: var(--warning);">Rp 0</div>
+            <div class="stat-val" id="valBelumReimb" style="color: #c2410c;">Rp 0</div>
           </div>
         </div>
       </div>
 
-      <!-- Khusus Admin: Saldo per Kas PIC -->
-      <div class="card hidden" id="cardPicWallets">
-        <h3>Saldo Kas per PIC Bidang</h3>
+      <!-- Leaderboard / Podium Kas PIC (Khusus Admin) -->
+      <div class="card navy hidden" id="cardPicWallets">
+        <h3>Papan Saldo Kas PIC</h3>
         <div id="listPicWallets" class="muted">Belum ada alokasi ke PIC.</div>
       </div>
 
       <!-- Breakdown Pengeluaran -->
       <div class="card">
-        <h3 id="judulBreakdown">Pengeluaran per Bidang</h3>
+        <h3 id="judulBreakdown">Statistik Pengeluaran</h3>
         <div id="listBreakdown" class="muted">Belum ada pengeluaran.</div>
       </div>
 
-      <!-- Khusus PIC: Riwayat Dana Diterima dari Kas Induk -->
-      <div class="card hidden" id="cardPicAlokasi">
-        <h3>Dana Diterima dari Kas Induk</h3>
-        <div id="listPicAlokasi" class="muted">Belum ada dana masuk.</div>
+      <!-- Khusus PIC: Dana Masuk dari Kas Induk -->
+      <div class="card navy hidden" id="cardPicAlokasi">
+        <h3>Dana Masuk dari Kas Induk</h3>
+        <div id="listPicAlokasi" class="muted">Belum ada transfer dana.</div>
       </div>
 
-      <!-- Khusus Admin: Input Modal & Transfer ke Kas PIC -->
+      <!-- Khusus Admin: Kelola Kas Induk -->
       <div class="card hidden" id="cardAdminModal">
         <h3>Kelola Kas Induk (Admin)</h3>
         <div id="modalMsg"></div>
@@ -350,17 +451,17 @@
         <datalist id="listBidangDatalist"></datalist>
         <label for="modCatatan">Catatan (opsional)</label>
         <input type="text" id="modCatatan" placeholder="Opsional" />
-        <button class="btn" id="btnSimpanKasInduk">Simpan ke Kas Induk</button>
+        <button class="btn btn-success" id="btnSimpanKasInduk">Simpan ke Kas Induk</button>
       </div>
     </section>
 
     <!-- TAB 2: TAMBAH PENGELUARAN -->
     <section id="tabTambah" class="hidden">
       <div class="card">
-        <h2>Catat Pengeluaran</h2>
+        <h2>Misi Catat Pengeluaran</h2>
         <div id="addMsg"></div>
 
-        <label for="inpFoto">Foto Nota (Kompres + OCR Otomatis)</label>
+        <label for="inpFoto">Foto Nota (+25 XP, Kompres + OCR Otomatis)</label>
         <input type="file" id="inpFoto" accept="image/*" capture="environment" />
         <img id="previewNota" class="preview-img hidden" alt="Pratinjau nota" />
         <div id="ocrStatus" class="alert alert-info hidden" style="margin-top: 8px;"></div>
@@ -394,15 +495,15 @@
           <option value="Pribadi">Dana Pribadi (Reimburs ke Kas Induk)</option>
         </select>
 
-        <button class="btn" id="btnSimpanExp">Simpan Pengeluaran</button>
+        <button class="btn btn-success" id="btnSimpanExp">Selesaikan &amp; Simpan</button>
       </div>
     </section>
 
     <!-- TAB 3: RIWAYAT & LPJ -->
     <section id="tabRiwayat" class="hidden">
-      <div class="card">
+      <div class="card navy">
         <div class="row-between" style="align-items: center; margin-bottom: 8px;">
-          <h2 style="margin: 0;">Riwayat &amp; LPJ</h2>
+          <h2 style="margin: 0;">Gulungan Riwayat &amp; LPJ</h2>
           <div style="display: flex; gap: 6px;">
             <button class="btn btn-secondary btn-sm" id="btnExportCsv">CSV</button>
             <button class="btn btn-sm" id="btnPrintLpj">Cetak LPJ (PDF)</button>
@@ -434,24 +535,24 @@
     <!-- TAB 4: REIMBURS -->
     <section id="tabReimburs" class="hidden">
       <div class="card">
-        <h2>Quest Reimburs (Dana Pribadi → Kas Induk)</h2>
+        <h2>Peti Reimburs (Dana Pribadi → Kas Induk)</h2>
         <div class="stat-box" style="margin-bottom: 10px;">
           <div class="stat-label">Total Masih Harus Diganti Kas Induk</div>
-          <div class="stat-val" id="reimbTotalBelum" style="color: var(--warning);">Rp 0</div>
+          <div class="stat-val" id="reimbTotalBelum" style="color: #c2410c;">Rp 0</div>
         </div>
         <div id="reimbMsg"></div>
         <div id="listReimburs">Memuat data...</div>
       </div>
     </section>
 
-    <!-- TAB 5: AKUN, KATEGORI & PENGGUNA -->
+    <!-- TAB 5: AKUN -->
     <section id="tabAkun" class="hidden">
-      <div class="card">
-        <h2>Profil Akun</h2>
+      <div class="card navy">
+        <h2>Profil Hero</h2>
         <p style="margin: 4px 0;"><strong id="accNama">-</strong></p>
         <p class="muted" id="accEmail" style="margin: 0 0 6px;">-</p>
         <p class="muted" id="accInfo" style="margin: 0;">-</p>
-        <button class="btn btn-secondary" id="btnToggleTheme">Ganti Mode Terang / Gelap</button>
+        <button class="btn btn-secondary" id="btnToggleTheme">Ganti Latar Siang / Malam</button>
       </div>
 
       <div class="card">
@@ -462,7 +563,6 @@
         <button class="btn" id="btnGantiPin">Simpan PIN Baru</button>
       </div>
 
-      <!-- Kelola Kategori (Bisa Admin & PIC) -->
       <div class="card">
         <h3>Kelola Kategori Event Ini</h3>
         <div id="katMsg"></div>
@@ -480,7 +580,6 @@
         <div id="listKategori" style="margin-top: 12px;"></div>
       </div>
 
-      <!-- Khusus Admin: Kelola Pengguna -->
       <div class="card hidden" id="cardAdminUsers">
         <h3>Kelola Pengguna / PIC (Admin)</h3>
         <div id="userMsg"></div>
@@ -509,11 +608,11 @@
             <input type="text" id="usrBidang" placeholder="Artis" />
           </div>
         </div>
-        <button class="btn" id="btnSimpanUser">Simpan / Update Pengguna</button>
+        <button class="btn btn-success" id="btnSimpanUser">Simpan / Update Pengguna</button>
         <div id="listUsers" style="margin-top: 12px;"></div>
       </div>
 
-      <button class="btn btn-secondary" id="btnLogout" style="color: var(--danger);">Keluar dari Akun</button>
+      <button class="btn btn-secondary" id="btnLogout" style="color: #fca5a5;">Keluar dari Akun</button>
     </section>
   </main>
 
@@ -524,34 +623,24 @@
       <div id="editMsg"></div>
       <input type="hidden" id="editId" />
       <div class="grid-2">
-        <div>
-          <label for="editTanggal">Tanggal</label>
-          <input type="date" id="editTanggal" />
-        </div>
-        <div>
-          <label for="editNominal">Nominal (Rp)</label>
-          <input type="number" id="editNominal" inputmode="numeric" />
-        </div>
+        <div><label for="editTanggal">Tanggal</label><input type="date" id="editTanggal" /></div>
+        <div><label for="editNominal">Nominal (Rp)</label><input type="number" id="editNominal" inputmode="numeric" /></div>
       </div>
-      <label for="editBidang">Bidang</label>
-      <select id="editBidang"></select>
-      <label for="editKategori">Kategori</label>
-      <select id="editKategori"></select>
-      <label for="editVendor">Nama Toko / Vendor (opsional)</label>
-      <input type="text" id="editVendor" />
-      <label for="editKeterangan">Keterangan</label>
-      <input type="text" id="editKeterangan" />
+      <label for="editBidang">Bidang</label><select id="editBidang"></select>
+      <label for="editKategori">Kategori</label><select id="editKategori"></select>
+      <label for="editVendor">Nama Toko / Vendor (opsional)</label><input type="text" id="editVendor" />
+      <label for="editKeterangan">Keterangan</label><input type="text" id="editKeterangan" />
       <div class="grid-2" style="margin-top: 8px;">
         <button class="btn btn-secondary" id="btnBatalEdit">Batal</button>
-        <button class="btn" id="btnSimpanEdit">Simpan</button>
+        <button class="btn btn-success" id="btnSimpanEdit">Simpan</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL PROSES REIMBURS + BUKTI TRANSFER -->
+  <!-- MODAL PROSES REIMBURS -->
   <div id="modalReimb" class="modal-backdrop hidden">
     <div class="card modal-box">
-      <h3>Konfirmasi Reimburs (Kas Induk)</h3>
+      <h3>Proses Reimburs (Kas Induk)</h3>
       <div id="reimbModalMsg"></div>
       <input type="hidden" id="reimbId" />
       <label for="reimbTgl">Tanggal Transfer Penggantian</label>
@@ -561,34 +650,33 @@
       <img id="reimbPreview" class="preview-img hidden" alt="Bukti transfer" />
       <div class="grid-2" style="margin-top: 8px;">
         <button class="btn btn-secondary" id="btnBatalReimb">Batal</button>
-        <button class="btn btn-success" id="btnKonfirmReimb">Tandai Sudah Diganti</button>
+        <button class="btn btn-success" id="btnKonfirmReimb">Tandai Lunas</button>
       </div>
     </div>
   </div>
 
-  <!-- AREA CETAK LPJ (PDF) -->
   <div id="printArea"></div>
 
-  <!-- Navigasi Bawah -->
+  <!-- Bottom Game Navigation -->
   <nav class="bottom-nav hidden" id="bottomNav">
     <button class="nav-btn active" data-tab="tabBeranda">
-      <svg viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M3 11L12 3l9 8v10h-6v-6H9v6H3z" fill="#fbbf24" stroke="#2c180b" stroke-width="2"/></svg>
       <span>Beranda</span>
     </button>
     <button class="nav-btn" data-tab="tabTambah">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#4ade80" stroke="#14532d" stroke-width="2"/><path d="M12 7v10M7 12h10" stroke="#14532d" stroke-width="2.5"/></svg>
       <span>Tambah</span>
     </button>
     <button class="nav-btn" data-tab="tabRiwayat">
-      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+      <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2" fill="#f6e7c8" stroke="#2c180b" stroke-width="2"/><path d="M8 8h8M8 12h8M8 16h5" stroke="#6e3f1d" stroke-width="2"/></svg>
       <span>Riwayat</span>
     </button>
     <button class="nav-btn" data-tab="tabReimburs">
-      <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>
+      <svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="12" rx="2" fill="#c084fc" stroke="#2c180b" stroke-width="2"/><path d="M3 12h18" stroke="#2c180b" stroke-width="2"/><circle cx="12" cy="12" r="2" fill="#fde047"/></svg>
       <span>Reimburs</span>
     </button>
     <button class="nav-btn" data-tab="tabAkun">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"/></svg>
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="#38bdf8" stroke="#0f172a" stroke-width="2"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" fill="#38bdf8" stroke="#0f172a" stroke-width="2"/></svg>
       <span>Akun</span>
     </button>
   </nav>
@@ -602,6 +690,7 @@
       token: localStorage.getItem('konser_token') || '',
       eventId: localStorage.getItem('finstage_event_id') || '',
       eventName: localStorage.getItem('finstage_event_name') || '',
+      soundOn: localStorage.getItem('finstage_sound') !== 'off',
       user: null,
       events: [],
       dashboard: null,
@@ -617,30 +706,59 @@
 
     const savedTheme = localStorage.getItem('konser_theme');
     if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+    $('btnSound').textContent = state.soundOn ? '🔊' : '🔇';
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
+
+    /* ==================== EFEK SUARA 8-BIT & TOAST GAME ==================== */
+    function playGameSfx(type) {
+      if (!state.soundOn) return;
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const playTone = (freq, start, dur) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+          gain.gain.setValueAtTime(0.08, ctx.currentTime + start);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + start);
+          osc.stop(ctx.currentTime + start + dur);
+        };
+        if (type === 'coin') { playTone(987, 0, 0.08); playTone(1318, 0.08, 0.16); }
+        else if (type === 'clear') { playTone(523, 0, 0.08); playTone(659, 0.08, 0.08); playTone(784, 0.16, 0.08); playTone(1046, 0.24, 0.2); }
+      } catch (e) {}
+    }
+
+    function showGameToast(msg, sfx = 'coin') {
+      playGameSfx(sfx);
+      const t = $('gameToast');
+      t.textContent = msg;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 2600);
+    }
+
+    $('btnSound').addEventListener('click', () => {
+      state.soundOn = !state.soundOn;
+      localStorage.setItem('finstage_sound', state.soundOn ? 'on' : 'off');
+      $('btnSound').textContent = state.soundOn ? '🔊' : '🔇';
+      if (state.soundOn) playGameSfx('coin');
+    });
 
     async function apiCall(action, payload = {}) {
       const url = state.apiUrl;
       if (!url || url.includes('PASTE_URL_WEB_APP')) throw new Error('URL Web App Apps Script belum diisi.');
       const res = await fetch(url, {
         method: 'POST',
-        body: JSON.stringify({
-          action,
-          email: state.email,
-          token: state.token,
-          event_id: state.eventId,
-          ...payload
-        })
+        body: JSON.stringify({ action, email: state.email, token: state.token, event_id: state.eventId, ...payload })
       });
       const data = await res.json();
       if (!data.ok) {
         if (data.code === 'SESSION_EXPIRED') {
-          localStorage.removeItem('konser_token');
-          state.token = '';
-          location.reload();
+          localStorage.removeItem('konser_token'); state.token = ''; location.reload();
         }
         const err = new Error(data.error || 'Permintaan gagal.');
         err.isServerRejection = true;
@@ -668,55 +786,46 @@
         req.onerror = () => reject(req.error);
       });
     }
-
     async function enqueueOffline(item) {
       const db = await openQueueDb();
       return new Promise((resolve, reject) => {
         const tx = db.transaction('queue', 'readwrite');
         tx.objectStore('queue').add(item);
-        tx.oncomplete = resolve;
-        tx.onerror = () => reject(tx.error);
+        tx.oncomplete = resolve; tx.onerror = () => reject(tx.error);
       });
     }
-
     async function getOfflineQueue() {
       const db = await openQueueDb();
       return new Promise((resolve, reject) => {
         const tx = db.transaction('queue', 'readonly');
         const req = tx.objectStore('queue').getAll();
-        req.onsuccess = () => resolve(req.result || []);
-        req.onerror = () => reject(req.error);
+        req.onsuccess = () => resolve(req.result || []); req.onerror = () => reject(req.error);
       });
     }
-
     async function removeOfflineItem(qid) {
       const db = await openQueueDb();
       return new Promise((resolve, reject) => {
         const tx = db.transaction('queue', 'readwrite');
         tx.objectStore('queue').delete(qid);
-        tx.oncomplete = resolve;
-        tx.onerror = () => reject(tx.error);
+        tx.oncomplete = resolve; tx.onerror = () => reject(tx.error);
       });
     }
-
     async function updateOfflineBanner() {
       try {
         const items = await getOfflineQueue();
         if (items.length > 0) {
-          $('offlineText').textContent = `${items.length} pengeluaran tersimpan di antrean offline.`;
+          $('offlineText').textContent = `${items.length} pengeluaran menunggu sinkronisasi.`;
           $('offlineBanner').classList.remove('hidden');
         } else {
           $('offlineBanner').classList.add('hidden');
         }
       } catch (e) {}
     }
-
     async function syncOfflineQueue() {
       if (!navigator.onLine || !state.token) return;
       const items = await getOfflineQueue();
       if (!items.length) return;
-      $('btnSyncOffline').disabled = true;
-      $('btnSyncOffline').textContent = 'Menyinkronkan...';
+      $('btnSyncOffline').disabled = true; $('btnSyncOffline').textContent = 'Sync...';
       let synced = 0;
       for (const item of items) {
         try {
@@ -728,16 +837,17 @@
           else break;
         }
       }
-      $('btnSyncOffline').disabled = false;
-      $('btnSyncOffline').textContent = 'Sinkronkan';
+      $('btnSyncOffline').disabled = false; $('btnSyncOffline').textContent = 'Sinkronkan';
       await updateOfflineBanner();
-      if (synced > 0 && state.eventId) refreshBootstrap();
+      if (synced > 0 && state.eventId) {
+        showGameToast(`SYNC CLEAR! +${synced * 15} XP`, 'clear');
+        refreshBootstrap();
+      }
     }
-
     $('btnSyncOffline').addEventListener('click', syncOfflineQueue);
     window.addEventListener('online', syncOfflineQueue);
 
-    /* ==================== LOGIN & PILIH EVENT ==================== */
+    /* ==================== LOGIN & EVENT ==================== */
     async function initLoginView() {
       if (DEFAULT_API_URL.includes('PASTE_URL_WEB_APP')) {
         $('apiConfigWrap').classList.remove('hidden');
@@ -752,8 +862,6 @@
             applyBootstrap(boot);
             enterEventApp(false);
           } else {
-            const bootCheck = await apiCall('getEvents');
-            state.events = bootCheck.events || [];
             showEventSelector();
           }
         } catch (err) {
@@ -769,15 +877,13 @@
       try {
         $('btnLogin').disabled = true;
         showMsg('loginMsg', 'Memeriksa akun...', 'info');
-        state.email = email;
-        state.apiUrl = url;
+        state.email = email; state.apiUrl = url;
         const res = await apiCall('login', { pin });
-        state.token = res.token;
-        state.user = res.user;
-        state.events = res.events || [];
+        state.token = res.token; state.user = res.user; state.events = res.events || [];
         localStorage.setItem('konser_email', email);
         localStorage.setItem('konser_token', res.token);
         localStorage.setItem('konser_api_url', url);
+        playGameSfx('coin');
         showEventSelector();
       } catch (err) {
         showMsg('loginMsg', err.message, 'danger');
@@ -793,45 +899,33 @@
       $('viewEvents').classList.remove('hidden');
 
       if (state.user) {
-        const isAdmin = state.user.peran === 'admin';
-        $('roleBadge').textContent = isAdmin ? 'ADMIN • LV MAX' : `PIC • ${state.user.bidang}`;
-        $('cardNewEvent').classList.toggle('hidden', !isAdmin);
+        $('cardNewEvent').classList.toggle('hidden', state.user.peran !== 'admin');
       }
       $('evtTanggal').value = todayStr();
-
       $('eventList').innerHTML = state.events.length
         ? state.events.map(ev => `
           <div class="list-item row-between" style="align-items:center;">
-            <div>
-              <strong>${escapeHtml(ev.nama_event)}</strong>
-              <div class="muted">${escapeHtml(ev.tanggal_event)} • ${escapeHtml(ev.status)}</div>
-            </div>
-            <button class="btn btn-sm" onclick="selectEvent('${escapeHtml(ev.event_id)}', '${escapeHtml(ev.nama_event)}')">Buka</button>
+            <div><strong>${escapeHtml(ev.nama_event)}</strong><div class="muted">${escapeHtml(ev.tanggal_event)} • ${escapeHtml(ev.status)}</div></div>
+            <button class="btn btn-sm" onclick="selectEvent('${escapeHtml(ev.event_id)}', '${escapeHtml(ev.nama_event)}')">Mainkan</button>
           </div>`).join('')
         : '<span class="muted">Belum ada event tersedia.</span>';
     }
 
     window.selectEvent = (eventId, eventName) => {
-      state.eventId = eventId;
-      state.eventName = eventName;
+      state.eventId = eventId; state.eventName = eventName;
       localStorage.setItem('finstage_event_id', eventId);
       localStorage.setItem('finstage_event_name', eventName);
       enterEventApp(true);
     };
-
     $('btnSwitchEvent').addEventListener('click', showEventSelector);
 
     $('btnBuatEvent').addEventListener('click', async () => {
       try {
         $('btnBuatEvent').disabled = true;
-        const res = await apiCall('createEvent', {
-          nama_event: $('evtNama').value.trim(),
-          tanggal_event: $('evtTanggal').value
-        });
-        $('evtNama').value = '';
-        state.events.unshift(res.event);
+        const res = await apiCall('createEvent', { nama_event: $('evtNama').value.trim(), tanggal_event: $('evtTanggal').value });
+        $('evtNama').value = ''; state.events.unshift(res.event);
         showEventSelector();
-        showMsg('newEventMsg', 'Event berhasil dibuat!', 'success');
+        showMsg('newEventMsg', 'Event baru siap dimainkan!', 'success');
       } catch (err) {
         showMsg('newEventMsg', err.message, 'danger');
       } finally {
@@ -845,11 +939,12 @@
       $('topbar').classList.remove('hidden');
       $('bottomNav').classList.remove('hidden');
 
-      $('btnSwitchEvent').textContent = state.eventName ? `Event: ${state.eventName.slice(0, 14)}` : 'Pilih Event';
-      $('lblEventAktif').textContent = `Event Aktif: ${state.eventName || state.eventId}`;
+      $('btnSwitchEvent').textContent = state.eventName ? state.eventName.slice(0, 14) : 'Event';
+      $('lblEventAktif').textContent = `Event: ${state.eventName || state.eventId}`;
 
       const isAdmin = state.user.peran === 'admin';
-      $('roleBadge').textContent = isAdmin ? 'ADMIN • LV MAX' : `PIC • ${state.user.bidang}`;
+      $('heroName').textContent = `${state.user.nama} (${isAdmin ? 'Admin' : 'PIC ' + state.user.bidang})`;
+      $('heroSub').textContent = 'FinStage • Powered by Baam Entertainment';
       $('accNama').textContent = state.user.nama;
       $('accEmail').textContent = state.user.email;
       $('accInfo').textContent = `Peran: ${state.user.peran.toUpperCase()} | Bidang: ${state.user.bidang}`;
@@ -861,17 +956,13 @@
       $('cardAdminUsers').classList.toggle('hidden', !isAdmin);
       $('filterBidang').classList.toggle('hidden', !isAdmin);
 
-      // Sumber dana form tambah: Admin bisa pilih Kas Induk, Kas PIC, atau Pribadi
       $('inpDibayar').innerHTML = isAdmin
         ? `<option value="Kas Induk">Kas Induk</option><option value="Kas PIC">Kas PIC</option><option value="Pribadi">Dana Pribadi (Reimburs ke Kas Induk)</option>`
         : `<option value="Kas PIC">Kas PIC</option><option value="Pribadi">Dana Pribadi (Reimburs ke Kas Induk)</option>`;
 
-      // Bidang di Kelola Kategori: PIC terkunci di bidangnya sendiri
       $('katBidang').value = isAdmin ? '' : state.user.bidang;
       $('katBidang').disabled = !isAdmin;
-
-      $('inpTanggal').value = todayStr();
-      $('modTanggal').value = todayStr();
+      $('inpTanggal').value = todayStr(); $('modTanggal').value = todayStr();
 
       switchTab('tabBeranda');
       updateOfflineBanner();
@@ -881,23 +972,14 @@
 
     $('btnLogout').addEventListener('click', async () => {
       try { await apiCall('logout'); } catch (e) {}
-      localStorage.removeItem('konser_token');
-      localStorage.removeItem('finstage_event_id');
-      location.reload();
+      localStorage.removeItem('konser_token'); localStorage.removeItem('finstage_event_id'); location.reload();
     });
 
-    /* ==================== NAVIGASI & BOOTSTRAP ==================== */
-    document.querySelectorAll('.nav-btn').forEach((btn) => {
-      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-    });
-
+    /* ==================== NAVIGASI & DASHBOARD ==================== */
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
     function switchTab(tabId) {
-      ['tabBeranda', 'tabTambah', 'tabRiwayat', 'tabReimburs', 'tabAkun'].forEach((id) => {
-        $(id).classList.toggle('hidden', id !== tabId);
-      });
-      document.querySelectorAll('.nav-btn').forEach((b) => {
-        b.classList.toggle('active', b.dataset.tab === tabId);
-      });
+      ['tabBeranda', 'tabTambah', 'tabRiwayat', 'tabReimburs', 'tabAkun'].forEach(id => $(id).classList.toggle('hidden', id !== tabId));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
     }
 
     async function refreshBootstrap() {
@@ -905,7 +987,7 @@
         const boot = await apiCall('getBootstrap');
         applyBootstrap(boot);
       } catch (err) {
-        $('listBreakdown').innerHTML = `<span style="color:var(--danger)">${escapeHtml(err.message)}</span>`;
+        $('listBreakdown').innerHTML = `<span style="color:#ef4444">${escapeHtml(err.message)}</span>`;
       }
     }
 
@@ -915,24 +997,36 @@
       state.categories = boot.categories || [];
       state.expenses = boot.expenses || [];
       renderDashboard(boot.dashboard);
+      updateHeroXp();
       populateBidangDropdown();
       renderCategoriesList();
       renderRiwayat();
       renderReimburs();
     }
 
-    /* ==================== BERANDA KAS INDUK VS KAS PIC ==================== */
+    function updateHeroXp() {
+      // Hitung XP dari jumlah transaksi + bonus foto nota
+      const xp = state.expenses.reduce((sum, e) => sum + 10 + (e.nota_url ? 15 : 0), 0);
+      let rank = 'ROOKIE CREW';
+      if (xp >= 400) rank = 'FINSTAGE LEGEND';
+      else if (xp >= 200) rank = 'TREASURY KNIGHT';
+      else if (xp >= 75) rank = 'STAGE OFFICER';
+      $('rankBadge').textContent = rank;
+      $('xpText').textContent = `${xp} XP`;
+      $('xpBar').style.width = `${Math.min(100, Math.max(10, (xp % 200) / 2))}%`;
+    }
+
     function renderDashboard(d) {
       const pb = $('progBar');
-      pb.style.width = `${100 - d.persenTerpakai}%`; // HP bar menunjukkan sisa energi/kas
+      pb.style.width = `${100 - d.persenTerpakai}%`;
       pb.classList.remove('mid', 'low');
       if (d.peringatanRendah) pb.classList.add('low');
       else if (d.persenTerpakai >= 50) pb.classList.add('mid');
       $('warningSaldo').classList.toggle('hidden', !d.peringatanRendah);
-      $('valPersen').textContent = `${d.persenTerpakai}% terpakai (Sisa ${100 - d.persenTerpakai}%)`;
+      $('valPersen').textContent = `HP Kas: ${100 - d.persenTerpakai}% tersisa (${d.persenTerpakai}% terpakai)`;
 
       if (d.isAdmin) {
-        $('judulRingkasan').textContent = 'Konsolidasi Kas Induk & Event';
+        $('judulRingkasan').textContent = 'Peti Kas Induk & Event';
         $('lblSisaUtama').textContent = 'Sisa Dana Event Keseluruhan';
         $('valSisaUtama').textContent = rp(d.sisaEvent);
         $('lblDanaMasuk').textContent = 'Total Modal Event';
@@ -942,42 +1036,60 @@
         $('valKasInduk').textContent = rp(d.sisaKasInduk);
         $('valBelumReimb').textContent = rp(d.belumReimburs);
 
-        $('listPicWallets').innerHTML = d.picWallets.length
-          ? d.picWallets.map(w => `
-            <div class="list-item">
-              <div class="row-between">
-                <strong>${escapeHtml(w.bidang)}</strong>
-                <strong>Sisa: ${rp(w.sisa)}</strong>
+        $('hudSisa').textContent = rp(d.sisaEvent);
+        $('hudModal').textContent = rp(d.totalModal);
+        $('hudReimb').textContent = rp(d.belumReimburs);
+
+        const sortedPic = d.picWallets.slice().sort((a, b) => b.sisa - a.sisa);
+        $('listPicWallets').innerHTML = sortedPic.length
+          ? sortedPic.map((w, idx) => {
+            const cls = idx === 0 ? 'rank-1' : idx === 1 ? 'rank-2' : idx === 2 ? 'rank-3' : 'rank-n';
+            return `
+            <div class="list-item" style="display:flex; gap:10px; align-items:center;">
+              <span class="rank-badge ${cls}">${idx + 1}</span>
+              <div style="flex:1;">
+                <div class="row-between"><strong>${escapeHtml(w.bidang)}</strong><strong>Sisa: ${rp(w.sisa)}</strong></div>
+                <div class="muted">Diterima: ${rp(w.diterima)} • Terpakai: ${rp(w.terpakai)}</div>
               </div>
-              <div class="muted">Diterima: ${rp(w.diterima)} • Terpakai: ${rp(w.terpakai)} • Reimburs Belum: ${rp(w.belumReimburs)}</div>
-            </div>`).join('')
+            </div>`;
+          }).join('')
           : '<span class="muted">Belum ada dana dialokasikan ke Kas PIC.</span>';
       } else {
         $('judulRingkasan').textContent = `Dompet Kas PIC (${d.bidang})`;
         $('lblSisaUtama').textContent = 'Sisa Kas PIC Anda';
         $('valSisaUtama').textContent = rp(d.sisaPic);
-        $('lblDanaMasuk').textContent = 'Dana Diterima dari Induk';
+        $('lblDanaMasuk').textContent = 'Dana Diterima';
         $('valDanaMasuk').textContent = rp(d.danaDiterima);
         $('lblTerpakai').textContent = 'Terpakai Kas PIC';
         $('valTerpakai').textContent = rp(d.terpakaiPic);
         $('valBelumReimb').textContent = rp(d.belumReimburs);
 
+        $('hudSisa').textContent = rp(d.sisaPic);
+        $('hudModal').textContent = rp(d.danaDiterima);
+        $('hudReimb').textContent = rp(d.belumReimburs);
+
         $('listPicAlokasi').innerHTML = d.daftarAlokasi.length
           ? d.daftarAlokasi.map(a => `
             <div class="list-item row-between">
               <div><strong>${escapeHtml(String(a.tanggal).slice(0,10))}</strong><div class="muted">${escapeHtml(a.catatan || 'Transfer Kas Induk')}</div></div>
-              <strong>+${rp(a.nominal)}</strong>
+              <strong style="color:#4ade80;">+${rp(a.nominal)}</strong>
             </div>`).join('')
           : '<span class="muted">Belum ada transfer dana dari Kas Induk.</span>';
       }
 
-      $('judulBreakdown').textContent = d.isAdmin ? 'Pengeluaran per Bidang' : 'Pengeluaran per Kategori';
+      $('judulBreakdown').textContent = d.isAdmin ? 'Statistik per Bidang' : 'Statistik per Kategori';
       $('listBreakdown').innerHTML = d.breakdown.length
-        ? d.breakdown.map(b => `
-          <div class="list-item">
-            <div class="row-between"><strong>${escapeHtml(b.label)}</strong><strong>${rp(b.terpakai)}</strong></div>
-            <div class="muted">Belum reimburs: ${rp(b.belumReimburs)}</div>
-          </div>`).join('')
+        ? d.breakdown.map((b, idx) => {
+          const cls = idx === 0 ? 'rank-1' : idx === 1 ? 'rank-2' : idx === 2 ? 'rank-3' : 'rank-n';
+          return `
+          <div class="list-item" style="display:flex; gap:10px; align-items:center;">
+            <span class="rank-badge ${cls}">${idx + 1}</span>
+            <div style="flex:1;">
+              <div class="row-between"><strong>${escapeHtml(b.label)}</strong><strong>${rp(b.terpakai)}</strong></div>
+              <div class="muted">Belum reimburs: ${rp(b.belumReimburs)}</div>
+            </div>
+          </div>`;
+        }).join('')
         : '<span class="muted">Belum ada pengeluaran tercatat.</span>';
     }
 
@@ -993,24 +1105,18 @@
         $('btnSimpanKasInduk').disabled = true;
         if (mode === 'modal') {
           await apiCall('addModal', {
-            tanggal: $('modTanggal').value,
-            nominal: $('modNominal').value,
-            sumber: $('modSumber').value.trim(),
-            catatan: $('modCatatan').value.trim()
+            tanggal: $('modTanggal').value, nominal: $('modNominal').value,
+            sumber: $('modSumber').value.trim(), catatan: $('modCatatan').value.trim()
           });
-          showMsg('modalMsg', 'Modal masuk berhasil disimpan ke Kas Induk!', 'success');
+          showGameToast('MODAL DITAMBAHKAN! +15 XP', 'clear');
         } else {
           await apiCall('addAlokasi', {
-            tanggal: $('modTanggal').value,
-            nominal: $('modNominal').value,
-            bidang: $('alokBidang').value.trim(),
-            catatan: $('modCatatan').value.trim()
+            tanggal: $('modTanggal').value, nominal: $('modNominal').value,
+            bidang: $('alokBidang').value.trim(), catatan: $('modCatatan').value.trim()
           });
-          showMsg('modalMsg', 'Dana berhasil dialokasikan ke Kas PIC!', 'success');
+          showGameToast('DANA DIKIRIM KE PIC!', 'coin');
         }
-        $('modNominal').value = '';
-        $('modSumber').value = '';
-        $('modCatatan').value = '';
+        $('modNominal').value = ''; $('modSumber').value = ''; $('modCatatan').value = '';
         refreshBootstrap();
       } catch (err) {
         showMsg('modalMsg', err.message, 'danger');
@@ -1019,7 +1125,7 @@
       }
     });
 
-    /* ==================== KATEGORI (ADMIN & PIC) ==================== */
+    /* ==================== KATEGORI & OCR ==================== */
     function populateBidangDropdown() {
       const isAdmin = state.user.peran === 'admin';
       const aktifCats = state.categories.filter(c => c.aktif === 'ya');
@@ -1027,16 +1133,13 @@
 
       $('inpBidang').innerHTML = bidangList.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('');
       $('inpBidang').disabled = !isAdmin;
-
-      $('listBidangDatalist').innerHTML = [...new Set(state.categories.map(c => c.bidang))]
-        .map(b => `<option value="${escapeHtml(b)}">`).join('');
+      $('listBidangDatalist').innerHTML = [...new Set(state.categories.map(c => c.bidang))].map(b => `<option value="${escapeHtml(b)}">`).join('');
 
       if (isAdmin) {
         const allBidang = [...new Set(state.expenses.map(e => e.bidang).concat(bidangList))];
         $('filterBidang').innerHTML = `<option value="semua">Semua Bidang</option>` +
           allBidang.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('');
       }
-
       populateKategoriDropdown('inpBidang', 'inpKategori');
     }
 
@@ -1047,7 +1150,6 @@
         ? list.map(k => `<option value="${escapeHtml(k)}">${escapeHtml(k)}</option>`).join('')
         : '<option value="">-- Tambah kategori di menu Akun --</option>';
     }
-
     $('inpBidang').addEventListener('change', () => populateKategoriDropdown('inpBidang', 'inpKategori'));
     $('editBidang').addEventListener('change', () => populateKategoriDropdown('editBidang', 'editKategori'));
 
@@ -1056,8 +1158,7 @@
       $('listKategori').innerHTML = state.categories.length
         ? state.categories.map(c => `
           <div class="list-item row-between">
-            <div>
-              <strong>${escapeHtml(c.bidang)}</strong> — ${escapeHtml(c.kategori)}
+            <div><strong>${escapeHtml(c.bidang)}</strong> — ${escapeHtml(c.kategori)}
               <div><span class="pill ${c.aktif === 'ya' ? 'pill-ok' : 'pill-warn'}">${c.aktif === 'ya' ? 'Aktif' : 'Nonaktif'}</span></div>
             </div>
             ${isAdmin ? `<button class="btn btn-secondary btn-sm" onclick="toggleKat(${c.rowIndex}, '${c.aktif === 'ya' ? 'tidak' : 'ya'}')">${c.aktif === 'ya' ? 'Nonaktifkan' : 'Aktifkan'}</button>` : ''}
@@ -1066,29 +1167,21 @@
     }
 
     window.toggleKat = async (rowIndex, nextState) => {
-      try {
-        await apiCall('toggleCategory', { rowIndex, aktif: nextState });
-        refreshBootstrap();
-      } catch (err) {
-        showMsg('katMsg', err.message, 'danger');
-      }
+      try { await apiCall('toggleCategory', { rowIndex, aktif: nextState }); refreshBootstrap(); }
+      catch (err) { showMsg('katMsg', err.message, 'danger'); }
     };
 
     $('btnTambahKat').addEventListener('click', async () => {
       try {
-        await apiCall('addCategory', {
-          bidang: $('katBidang').value.trim(),
-          kategori: $('katNama').value.trim()
-        });
+        await apiCall('addCategory', { bidang: $('katBidang').value.trim(), kategori: $('katNama').value.trim() });
         $('katNama').value = '';
-        showMsg('katMsg', 'Kategori berhasil ditambahkan!', 'success');
+        showMsg('katMsg', 'Kategori ditambahkan!', 'success');
         refreshBootstrap();
       } catch (err) {
         showMsg('katMsg', err.message, 'danger');
       }
     });
 
-    /* ==================== OCR & SIMPAN PENGELUARAN (PLUS OFFLINE QUEUE) ==================== */
     $('inpFoto').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -1097,12 +1190,10 @@
         $('ocrStatus').classList.remove('hidden');
         const { colorDataUrl, ocrDataUrl } = await processReceiptImage(file, 1400, 0.7);
         state.notaBase64 = colorDataUrl;
-        $('previewNota').src = colorDataUrl;
-        $('previewNota').classList.remove('hidden');
+        $('previewNota').src = colorDataUrl; $('previewNota').classList.remove('hidden');
 
         if (!navigator.onLine) {
-          showMsg('ocrStatus', 'Sedang offline: foto tersimpan, silakan isi detail secara manual.', 'warn');
-          return;
+          showMsg('ocrStatus', 'Sedang offline: foto tersimpan, isi detail secara manual.', 'warn'); return;
         }
         showMsg('ocrStatus', 'Memuat OCR Bahasa Indonesia & membaca nota...', 'info');
         await loadTesseractCdn();
@@ -1132,7 +1223,6 @@
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
           const colorDataUrl = canvas.toDataURL('image/jpeg', quality);
-
           const imgData = ctx.getImageData(0, 0, width, height);
           const d = imgData.data;
           for (let i = 0; i < d.length; i += 4) {
@@ -1152,8 +1242,7 @@
       return new Promise((resolve, reject) => {
         const s = document.createElement('script');
         s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
-        s.onload = resolve; s.onerror = reject;
-        document.head.appendChild(s);
+        s.onload = resolve; s.onerror = reject; document.head.appendChild(s);
       });
     }
 
@@ -1183,36 +1272,29 @@
 
     $('btnSimpanExp').addEventListener('click', async () => {
       const payload = {
-        event_id: state.eventId,
-        tanggal: $('inpTanggal').value,
-        bidang: $('inpBidang').value,
-        kategori: $('inpKategori').value,
-        vendor: $('inpVendor').value.trim(),
-        keterangan: $('inpKeterangan').value.trim(),
-        nominal: $('inpNominal').value,
-        dibayar_dari: $('inpDibayar').value,
-        notaBase64: state.notaBase64
+        event_id: state.eventId, tanggal: $('inpTanggal').value, bidang: $('inpBidang').value,
+        kategori: $('inpKategori').value, vendor: $('inpVendor').value.trim(),
+        keterangan: $('inpKeterangan').value.trim(), nominal: $('inpNominal').value,
+        dibayar_dari: $('inpDibayar').value, notaBase64: state.notaBase64
       };
       if (!payload.tanggal || !payload.kategori || !payload.nominal || Number(payload.nominal) <= 0) {
         return showMsg('addMsg', 'Tanggal, kategori, dan nominal (> 0) wajib diisi.', 'danger');
       }
-
       try {
         $('btnSimpanExp').disabled = true;
         showMsg('addMsg', 'Menyimpan pengeluaran...', 'info');
         if (!navigator.onLine) throw new Error('OFFLINE');
         await apiCall('addExpense', payload);
+        showGameToast(`QUEST COMPLETE! +${payload.notaBase64 ? 25 : 10} XP`, 'coin');
         showMsg('addMsg', 'Pengeluaran berhasil disimpan!', 'success');
-        resetTambahForm();
-        refreshBootstrap();
+        resetTambahForm(); refreshBootstrap();
       } catch (err) {
         if (err.isServerRejection) {
           showMsg('addMsg', err.message, 'danger');
         } else {
-          // Simpan ke antrean offline IndexedDB
           await enqueueOffline({ payload, createdAt: Date.now() });
           await updateOfflineBanner();
-          showMsg('addMsg', 'Sinyal terputus: transaksi disimpan ke Antrean Offline HP dan siap disinkronkan!', 'warn');
+          showMsg('addMsg', 'Sinyal terputus: disimpan ke Antrean Offline HP!', 'warn');
           resetTambahForm();
         }
       } finally {
@@ -1226,7 +1308,7 @@
       $('ocrStatus').classList.add('hidden'); state.notaBase64 = '';
     }
 
-    /* ==================== RIWAYAT, FILTER PERIODE, CSV, & LPJ PDF ==================== */
+    /* ==================== RIWAYAT, CSV, LPJ PDF, EDIT & REIMBURS ==================== */
     ['searchExp', 'tglDari', 'tglSampai', 'filterBidang', 'filterReimb'].forEach(id => {
       $(id).addEventListener('input', renderRiwayat);
       $(id).addEventListener('change', renderRiwayat);
@@ -1234,10 +1316,8 @@
 
     function getFilteredExpenses() {
       const q = $('searchExp').value.toLowerCase().trim();
-      const dari = $('tglDari').value;
-      const sampai = $('tglSampai').value;
-      const fb = $('filterBidang').value || 'semua';
-      const fr = $('filterReimb').value;
+      const dari = $('tglDari').value; const sampai = $('tglSampai').value;
+      const fb = $('filterBidang').value || 'semua'; const fr = $('filterReimb').value;
       return state.expenses.filter((e) => {
         if (dari && e.tanggal < dari) return false;
         if (sampai && e.tanggal > sampai) return false;
@@ -1255,7 +1335,7 @@
       $('listRiwayat').innerHTML = filtered.length
         ? filtered.map((e) => {
           const badge = e.dibayar_dari === 'Pribadi'
-            ? `<span class="pill ${e.reimburs === 'Sudah' ? 'pill-ok' : 'pill-warn'}">${e.reimburs === 'Sudah' ? 'CLEAR' : 'REIMBURS'} • ${e.reimburs}${e.tgl_reimburs ? ' (' + e.tgl_reimburs + ')' : ''}</span>`
+            ? `<span class="pill ${e.reimburs === 'Sudah' ? 'pill-ok' : 'pill-warn'}">${e.reimburs === 'Sudah' ? 'CLEAR' : 'PENDING'} • ${e.reimburs}${e.tgl_reimburs ? ' (' + e.tgl_reimburs + ')' : ''}</span>`
             : `<span class="pill pill-kas">${escapeHtml(e.dibayar_dari)}</span>`;
           const notaLink = e.nota_url ? `<a class="link" href="${escapeHtml(e.nota_url)}" target="_blank" rel="noopener">Lihat nota</a>` : '';
           const buktiLink = e.bukti_reimburs_url ? `<a class="link" href="${escapeHtml(e.bukti_reimburs_url)}" target="_blank" rel="noopener">Bukti TF</a>` : '';
@@ -1264,8 +1344,7 @@
           return `
             <div class="list-item">
               <div class="row-between">
-                <div>
-                  <strong>${escapeHtml(e.vendor || e.kategori)}</strong>
+                <div><strong>${escapeHtml(e.vendor || e.kategori)}</strong>
                   <div class="muted">${escapeHtml(e.tanggal)} • ${escapeHtml(e.bidang)} / ${escapeHtml(e.kategori)}</div>
                 </div>
                 <strong>${rp(e.nominal)}</strong>
@@ -1302,7 +1381,6 @@
       const summaryHtml = d.isAdmin
         ? `<p>Total Modal: <strong>${rp(d.totalModal)}</strong> | Total Belanja Riil: <strong>${rp(d.totalBelanjaRiil)}</strong> | Sisa Kas Event: <strong>${rp(d.sisaEvent)}</strong></p>`
         : `<p>Dana Diterima: <strong>${rp(d.danaDiterima)}</strong> | Terpakai Kas PIC: <strong>${rp(d.terpakaiPic)}</strong> | Sisa Kas PIC: <strong>${rp(d.sisaPic)}</strong></p>`;
-
       $('printArea').innerHTML = `
         <h2>Laporan Pertanggungjawaban Keuangan — ${escapeHtml(state.eventName)}</h2>
         <p style="font-size:12px;">FinStage • Powered by Baam Entertainment | Dicetak: ${todayStr()} oleh ${escapeHtml(state.user.nama)}</p>
@@ -1322,20 +1400,16 @@
       window.print();
     });
 
-    /* ==================== EDIT & REIMBURS + BUKTI TRANSFER ==================== */
     window.openEditModal = (id) => {
       const item = state.expenses.find(e => e.id === id);
       if (!item) return;
       showMsg('editMsg', '', 'info');
       $('editId').value = item.id; $('editTanggal').value = item.tanggal;
-      $('editNominal').value = item.nominal; $('editVendor').value = item.vendor;
-      $('editKeterangan').value = item.keterangan;
-
+      $('editNominal').value = item.nominal; $('editVendor').value = item.vendor; $('editKeterangan').value = item.keterangan;
       const isAdmin = state.user.peran === 'admin';
       const bidangList = isAdmin ? [...new Set(state.categories.filter(c => c.aktif === 'ya').map(c => c.bidang))] : [state.user.bidang];
       $('editBidang').innerHTML = bidangList.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('');
-      $('editBidang').value = item.bidang;
-      $('editBidang').disabled = !isAdmin;
+      $('editBidang').value = item.bidang; $('editBidang').disabled = !isAdmin;
       populateKategoriDropdown('editBidang', 'editKategori');
       $('editKategori').value = item.kategori;
       $('modalEdit').classList.remove('hidden');
@@ -1345,40 +1419,31 @@
       try {
         $('btnSimpanEdit').disabled = true;
         await apiCall('editExpense', {
-          id: $('editId').value, tanggal: $('editTanggal').value,
-          bidang: $('editBidang').value, kategori: $('editKategori').value,
-          vendor: $('editVendor').value.trim(), keterangan: $('editKeterangan').value.trim(),
-          nominal: $('editNominal').value
+          id: $('editId').value, tanggal: $('editTanggal').value, bidang: $('editBidang').value,
+          kategori: $('editKategori').value, vendor: $('editVendor').value.trim(),
+          keterangan: $('editKeterangan').value.trim(), nominal: $('editNominal').value
         });
-        $('modalEdit').classList.add('hidden');
-        refreshBootstrap();
-      } catch (err) {
-        showMsg('editMsg', err.message, 'danger');
-      } finally {
-        $('btnSimpanEdit').disabled = false;
-      }
+        $('modalEdit').classList.add('hidden'); refreshBootstrap();
+      } catch (err) { showMsg('editMsg', err.message, 'danger'); }
+      finally { $('btnSimpanEdit').disabled = false; }
     });
 
     function renderReimburs() {
       const pribadi = state.expenses.filter(e => e.dibayar_dari === 'Pribadi');
       const totalBelum = pribadi.filter(e => e.reimburs === 'Belum').reduce((s, e) => s + e.nominal, 0);
       $('reimbTotalBelum').textContent = rp(totalBelum);
-
       const isAdmin = state.user.peran === 'admin';
       $('listReimburs').innerHTML = pribadi.length
         ? pribadi.map(e => `
           <div class="list-item">
             <div class="row-between">
-              <div>
-                <strong>${escapeHtml(e.vendor || e.kategori)}</strong>
+              <div><strong>${escapeHtml(e.vendor || e.kategori)}</strong>
                 <div class="muted">${escapeHtml(e.tanggal)} • ${escapeHtml(e.bidang)} • ${escapeHtml(e.oleh)}</div>
               </div>
               <strong>${rp(e.nominal)}</strong>
             </div>
             <div class="row-between" style="align-items: center; margin-top: 6px;">
-              <span class="pill ${e.reimburs === 'Sudah' ? 'pill-ok' : 'pill-warn'}">
-                ${e.reimburs === 'Sudah' ? 'CLEAR • ' + e.tgl_reimburs : 'PENDING'}
-              </span>
+              <span class="pill ${e.reimburs === 'Sudah' ? 'pill-ok' : 'pill-warn'}">${e.reimburs === 'Sudah' ? 'CLEAR • ' + e.tgl_reimburs : 'PENDING'}</span>
               <div style="display:flex; gap:8px; align-items:center;">
                 ${e.bukti_reimburs_url ? `<a class="link" href="${escapeHtml(e.bukti_reimburs_url)}" target="_blank" rel="noopener">Lihat Bukti TF</a>` : ''}
                 ${isAdmin && e.reimburs === 'Belum' ? `<button class="btn btn-success btn-sm" onclick="openReimbModal('${escapeHtml(e.id)}')">Proses Reimburs</button>` : ''}
@@ -1389,59 +1454,40 @@
     }
 
     window.openReimbModal = (id) => {
-      $('reimbId').value = id;
-      $('reimbTgl').value = todayStr();
-      $('reimbBukti').value = '';
-      $('reimbPreview').classList.add('hidden');
-      state.buktiReimbBase64 = '';
-      showMsg('reimbModalMsg', '', 'info');
-      $('modalReimb').classList.remove('hidden');
+      $('reimbId').value = id; $('reimbTgl').value = todayStr(); $('reimbBukti').value = '';
+      $('reimbPreview').classList.add('hidden'); state.buktiReimbBase64 = '';
+      showMsg('reimbModalMsg', '', 'info'); $('modalReimb').classList.remove('hidden');
     };
     $('btnBatalReimb').addEventListener('click', () => $('modalReimb').classList.add('hidden'));
     $('reimbBukti').addEventListener('change', async (e) => {
-      const f = e.target.files[0];
-      if (!f) return;
+      const f = e.target.files[0]; if (!f) return;
       const { colorDataUrl } = await processReceiptImage(f, 1200, 0.7);
-      state.buktiReimbBase64 = colorDataUrl;
-      $('reimbPreview').src = colorDataUrl;
-      $('reimbPreview').classList.remove('hidden');
+      state.buktiReimbBase64 = colorDataUrl; $('reimbPreview').src = colorDataUrl; $('reimbPreview').classList.remove('hidden');
     });
     $('btnKonfirmReimb').addEventListener('click', async () => {
       try {
         $('btnKonfirmReimb').disabled = true;
-        await apiCall('markReimbursed', {
-          id: $('reimbId').value,
-          tgl_reimburs: $('reimbTgl').value,
-          buktiBase64: state.buktiReimbBase64
-        });
+        await apiCall('markReimbursed', { id: $('reimbId').value, tgl_reimburs: $('reimbTgl').value, buktiBase64: state.buktiReimbBase64 });
         $('modalReimb').classList.add('hidden');
-        showMsg('reimbMsg', 'Reimburs ditandai lunas!', 'success');
+        showGameToast('REIMBURS LUNAS! QUEST CLEAR!', 'clear');
         refreshBootstrap();
-      } catch (err) {
-        showMsg('reimbModalMsg', err.message, 'danger');
-      } finally {
-        $('btnKonfirmReimb').disabled = false;
-      }
+      } catch (err) { showMsg('reimbModalMsg', err.message, 'danger'); }
+      finally { $('btnKonfirmReimb').disabled = false; }
     });
 
     /* ==================== AKUN & KELOLA PENGGUNA ==================== */
     $('btnToggleTheme').addEventListener('click', () => {
       const curr = document.documentElement.getAttribute('data-theme');
-      const next = curr === 'dark' ? 'light' : 'dark';
+      const next = curr === 'light' ? 'dark' : 'light';
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('konser_theme', next);
     });
-
     $('btnGantiPin').addEventListener('click', async () => {
       try {
         await apiCall('changePin', { pinBaru: $('inpPinBaru').value.trim() });
-        $('inpPinBaru').value = '';
-        showMsg('pinMsg', 'PIN berhasil diubah & di-hash.', 'success');
-      } catch (err) {
-        showMsg('pinMsg', err.message, 'danger');
-      }
+        $('inpPinBaru').value = ''; showMsg('pinMsg', 'PIN berhasil diubah & di-hash.', 'success');
+      } catch (err) { showMsg('pinMsg', err.message, 'danger'); }
     });
-
     async function loadUsersList() {
       try {
         const { users } = await apiCall('getUsers');
@@ -1451,22 +1497,15 @@
           </div>`).join('');
       } catch (e) {}
     }
-
     $('btnSimpanUser').addEventListener('click', async () => {
       try {
         await apiCall('saveUser', {
-          target_email: $('usrEmail').value.trim(),
-          nama: $('usrNama').value.trim(),
-          pin: $('usrPin').value.trim(),
-          peran: $('usrPeran').value,
-          bidang: $('usrBidang').value.trim()
+          target_email: $('usrEmail').value.trim(), nama: $('usrNama').value.trim(),
+          pin: $('usrPin').value.trim(), peran: $('usrPeran').value, bidang: $('usrBidang').value.trim()
         });
         $('usrEmail').value = ''; $('usrNama').value = ''; $('usrPin').value = '';
-        showMsg('userMsg', 'Data pengguna berhasil disimpan!', 'success');
-        loadUsersList();
-      } catch (err) {
-        showMsg('userMsg', err.message, 'danger');
-      }
+        showMsg('userMsg', 'Data pengguna berhasil disimpan!', 'success'); loadUsersList();
+      } catch (err) { showMsg('userMsg', err.message, 'danger'); }
     });
 
     initLoginView();
