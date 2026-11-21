@@ -1,146 +1,136 @@
 /**
- * Backend Google Apps Script untuk Aplikasi Pencatatan Pengeluaran Konser Musik (PWA)
- * Database: Google Sheets | Penyimpanan Nota: Google Drive ("Nota Event")
+ * FinStage - Powered by Baam Entertainment
+ * Backend Google Apps Script (Multi-Event, Kas Induk vs Kas PIC, Bukti Reimburs, Kelola Akun)
  */
 
 const SHEET_NAMES = {
   PENGGUNA: 'Pengguna',
+  EVENTS: 'Events',
   KATEGORI: 'Kategori',
   MODAL: 'Modal',
+  ALOKASI: 'Alokasi_PIC',
   PENGELUARAN: 'Pengeluaran'
 };
 
 const DRIVE_FOLDER_NAME = 'Nota Event';
+const SESSION_TTL_SEC = 21600; // 6 jam
+const MAX_LOGIN_FAIL = 5;
+const LOCKOUT_SEC = 600; // 10 menit
 
 /**
- * Jalankan fungsi setup() SEKALI secara manual dari editor Apps Script
- * untuk membuat tab, header, format kolom PIN, folder Drive, dan akun admin awal.
+ * Jalankan setup() SEKALI dari editor Apps Script untuk membuat/melengkapi tab & header.
  */
 function setup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  // 1. Tab Pengguna
-  const shUser = ensureSheet_(ss, SHEET_NAMES.PENGGUNA, [
-    'email', 'nama', 'pin', 'peran', 'bidang'
-  ]);
-  // Format kolom PIN (kolom C) sebagai Teks agar angka 0 di depan tidak hilang
+  const shUser = ensureSheet_(ss, SHEET_NAMES.PENGGUNA, ['email', 'nama', 'pin', 'peran', 'bidang']);
   shUser.getRange('C:C').setNumberFormat('@');
   if (shUser.getLastRow() < 2) {
     shUser.appendRow(['admin@konser.id', 'Bendahara Utama', '0123', 'admin', 'Semua']);
-    // Contoh akun PIC (opsional, bisa dihapus/edit di Sheet)
     shUser.appendRow(['pic.produksi@konser.id', 'PIC Produksi', '1111', 'pic', 'Produksi']);
   }
 
-  // 2. Tab Kategori
-  const shKat = ensureSheet_(ss, SHEET_NAMES.KATEGORI, [
-    'bidang', 'pos', 'aktif'
-  ]);
-  if (shKat.getLastRow() < 2) {
-    const contohKat = [
-      ['Produksi', 'Sound System & Lighting', 'ya'],
-      ['Produksi', 'Panggung & Rigging', 'ya'],
-      ['Artis', 'Fee Pengisi Acara', 'ya'],
-      ['Artis', 'Akomodasi & Transportasi', 'ya'],
-      ['Promosi', 'Iklan Media Sosial', 'ya'],
-      ['Promosi', 'Cetak Poster & Tiket', 'ya'],
-      ['Konsumsi', 'Makan Kru & Panitia', 'ya'],
-      ['Keamanan', 'Petugas Keamanan & Izin', 'ya']
-    ];
-    shKat.getRange(2, 1, contohKat.length, 3).setValues(contohKat);
+  const shEvt = ensureSheet_(ss, SHEET_NAMES.EVENTS, ['event_id', 'nama_event', 'tanggal_event', 'status', 'dibuat']);
+  shEvt.getRange('C:C').setNumberFormat('yyyy-mm-dd');
+  const defaultEventId = 'EVT-DEFAULT';
+  if (shEvt.getLastRow() < 2) {
+    shEvt.appendRow([defaultEventId, 'Bam Bim Boom Fest Vol. 2', '2026-11-21', 'aktif', new Date()]);
   }
 
-  // 3. Tab Modal
-  const shModal = ensureSheet_(ss, SHEET_NAMES.MODAL, [
-    'id', 'tanggal', 'nominal', 'sumber', 'bidang', 'catatan'
-  ]);
-  shModal.getRange('B:B').setNumberFormat('yyyy-mm-dd');
-  shModal.getRange('C:C').setNumberFormat('#,##0');
+  const shKat = ensureSheet_(ss, SHEET_NAMES.KATEGORI, ['event_id', 'bidang', 'kategori', 'aktif']);
+  if (shKat.getLastRow() < 2) {
+    seedDefaultCategories_(shKat, defaultEventId);
+  }
 
-  // 4. Tab Pengeluaran
+  const shModal = ensureSheet_(ss, SHEET_NAMES.MODAL, ['id', 'event_id', 'tanggal', 'nominal', 'sumber', 'catatan']);
+  shModal.getRange('C:C').setNumberFormat('yyyy-mm-dd');
+  shModal.getRange('D:D').setNumberFormat('#,##0');
+
+  const shAlok = ensureSheet_(ss, SHEET_NAMES.ALOKASI, ['id', 'event_id', 'tanggal', 'bidang', 'nominal', 'catatan', 'oleh']);
+  shAlok.getRange('C:C').setNumberFormat('yyyy-mm-dd');
+  shAlok.getRange('E:E').setNumberFormat('#,##0');
+
   const shOut = ensureSheet_(ss, SHEET_NAMES.PENGELUARAN, [
-    'id', 'tanggal', 'bidang', 'pos', 'keterangan',
+    'id', 'event_id', 'tanggal', 'bidang', 'kategori', 'keterangan',
     'vendor', 'nominal', 'dibayar_dari', 'reimburs',
-    'tgl_reimburs', 'nota_url', 'oleh', 'dibuat'
+    'tgl_reimburs', 'bukti_reimburs_url', 'nota_url', 'oleh', 'dibuat'
   ]);
-  shOut.getRange('B:B').setNumberFormat('yyyy-mm-dd');
-  shOut.getRange('G:G').setNumberFormat('#,##0');
-  shOut.getRange('J:J').setNumberFormat('yyyy-mm-dd');
+  shOut.getRange('C:C').setNumberFormat('yyyy-mm-dd');
+  shOut.getRange('H:H').setNumberFormat('#,##0');
+  shOut.getRange('K:K').setNumberFormat('yyyy-mm-dd');
 
-  // 5. Pastikan folder Drive "Nota Event" tersedia
   getOrCreateNotaFolder_();
-
-  Logger.log('Setup selesai! Segera ganti PIN admin awal (0123) di menu Akun atau tab Pengguna.');
+  Logger.log('Setup FinStage selesai!');
 }
 
-/**
- * Endpoint utama untuk semua request POST dari PWA (tanpa header Content-Type khusus).
- */
+function seedDefaultCategories_(shKat, eventId) {
+  const contoh = [
+    [eventId, 'Produksi', 'Sound System & Lighting', 'ya'],
+    [eventId, 'Produksi', 'Panggung & Rigging', 'ya'],
+    [eventId, 'Artis', 'Fee Pengisi Acara', 'ya'],
+    [eventId, 'Artis', 'Akomodasi & Transportasi', 'ya'],
+    [eventId, 'Promosi', 'Iklan Media Sosial', 'ya'],
+    [eventId, 'Promosi', 'Cetak Poster & Tiket', 'ya'],
+    [eventId, 'Konsumsi', 'Makan Kru & Panitia', 'ya'],
+    [eventId, 'Keamanan', 'Petugas Keamanan & Izin', 'ya']
+  ];
+  shKat.getRange(shKat.getLastRow() + 1, 1, contoh.length, 4).setValues(contoh);
+}
+
 function doPost(e) {
   try {
     if (!e || !e.postData || !e.postData.contents) {
       return jsonResponse_({ ok: false, error: 'Payload kosong.' });
     }
-
     const req = JSON.parse(e.postData.contents);
     const action = req.action || '';
 
-    // Autentikasi wajib pada setiap request
-    const user = authenticate_(req.email, req.pin);
+    if (action === 'login') {
+      return jsonResponse_(handleLogin_(req.email, req.pin));
+    }
+
+    const user = authenticateSession_(req.email, req.token);
     if (!user) {
-      return jsonResponse_({ ok: false, error: 'Email atau PIN salah.' });
+      return jsonResponse_({ ok: false, code: 'SESSION_EXPIRED', error: 'Sesi habis. Silakan masuk ulang.' });
     }
 
     switch (action) {
-      case 'login':
-        return jsonResponse_({
-          ok: true,
-          user: {
-            email: user.email,
-            nama: user.nama,
-            peran: user.peran,
-            bidang: user.bidang
-          }
-        });
-
-      case 'getDashboard':
-        return jsonResponse_(handleGetDashboard_(user));
-
-      case 'getCategories':
-        return jsonResponse_(handleGetCategories_(user));
-
+      case 'getEvents':
+        return jsonResponse_(handleGetEvents_(user));
+      case 'createEvent':
+        if (user.peran !== 'admin') return jsonResponse_({ ok: false, error: 'Hanya admin yang dapat membuat event.' });
+        return jsonResponse_(handleCreateEvent_(req));
+      case 'getBootstrap':
+        return jsonResponse_(handleGetBootstrap_(user, req.event_id));
+      case 'addModal':
+        if (user.peran !== 'admin') return jsonResponse_({ ok: false, error: 'Hanya admin yang dapat menambah modal.' });
+        return jsonResponse_(handleAddModal_(req));
+      case 'addAlokasi':
+        if (user.peran !== 'admin') return jsonResponse_({ ok: false, error: 'Hanya admin yang dapat mengirim dana ke PIC.' });
+        return jsonResponse_(handleAddAlokasi_(user, req));
       case 'addExpense':
         return jsonResponse_(handleAddExpense_(user, req));
-
-      case 'getExpenses':
-        return jsonResponse_(handleGetExpenses_(user));
-
+      case 'editExpense':
+        return jsonResponse_(handleEditExpense_(user, req));
       case 'markReimbursed':
-        if (user.peran !== 'admin') {
-          return jsonResponse_({ ok: false, error: 'Akses ditolak: hanya bendahara/admin.' });
-        }
+        if (user.peran !== 'admin') return jsonResponse_({ ok: false, error: 'Hanya admin yang dapat memproses reimburs.' });
         return jsonResponse_(handleMarkReimbursed_(req));
-
-      case 'addModal':
-        if (user.peran !== 'admin') {
-          return jsonResponse_({ ok: false, error: 'Akses ditolak: hanya bendahara/admin.' });
-        }
-        return jsonResponse_(handleAddModal_(req));
-
       case 'addCategory':
-        if (user.peran !== 'admin') {
-          return jsonResponse_({ ok: false, error: 'Akses ditolak: hanya bendahara/admin.' });
-        }
-        return jsonResponse_(handleAddCategory_(req));
-
+        return jsonResponse_(handleAddCategory_(user, req));
       case 'toggleCategory':
-        if (user.peran !== 'admin') {
-          return jsonResponse_({ ok: false, error: 'Akses ditolak: hanya bendahara/admin.' });
-        }
+        if (user.peran !== 'admin') return jsonResponse_({ ok: false, error: 'Hanya admin yang dapat mengubah status kategori.' });
         return jsonResponse_(handleToggleCategory_(req));
-
+      case 'getUsers':
+        if (user.peran !== 'admin') return jsonResponse_({ ok: false, error: 'Hanya admin.' });
+        return jsonResponse_(handleGetUsers_());
+      case 'saveUser':
+        if (user.peran !== 'admin') return jsonResponse_({ ok: false, error: 'Hanya admin.' });
+        return jsonResponse_(handleSaveUser_(req));
       case 'changePin':
         return jsonResponse_(handleChangePin_(user, req));
-
+      case 'logout':
+        revokeSession_(req.email, req.token);
+        return jsonResponse_({ ok: true });
       default:
         return jsonResponse_({ ok: false, error: 'Aksi tidak dikenal: ' + action });
     }
@@ -149,214 +139,435 @@ function doPost(e) {
   }
 }
 
-/**
- * Endpoint GET sederhana untuk mengecek apakah Web App aktif.
- */
 function doGet() {
-  return jsonResponse_({ ok: true, message: 'API Pencatatan Pengeluaran Konser aktif.' });
+  return jsonResponse_({ ok: true, message: 'FinStage API aktif (v3).' });
 }
 
-/* ==================== HANDLER FITUR ==================== */
+/* ==================== AUTENTIKASI ==================== */
 
-function handleGetDashboard_(user) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const modals = readRows_(ss.getSheetByName(SHEET_NAMES.MODAL));
-  const expenses = readRows_(ss.getSheetByName(SHEET_NAMES.PENGELUARAN));
+function handleLogin_(email, pin) {
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  const cleanPin = String(pin || '').trim();
+  if (!cleanEmail || !cleanPin) return { ok: false, error: 'Email dan PIN wajib diisi.' };
 
-  const isAdmin = user.peran === 'admin';
+  const cache = CacheService.getScriptCache();
+  const failKey = 'fail_' + cleanEmail;
+  const failCount = Number(cache.get(failKey) || 0);
+  if (failCount >= MAX_LOGIN_FAIL) {
+    return { ok: false, error: 'Terlalu banyak percobaan gagal. Coba lagi dalam 10 menit.' };
+  }
 
-  // Filter data di SERVER: PIC hanya menerima data bidangnya sendiri
-  const filteredModals = isAdmin
-    ? modals
-    : modals.filter(m => String(m.bidang || '').trim() === user.bidang);
+  const user = verifyUserPin_(cleanEmail, cleanPin);
+  if (!user) {
+    cache.put(failKey, String(failCount + 1), LOCKOUT_SEC);
+    return { ok: false, error: 'Email atau PIN salah.' };
+  }
 
-  const filteredExpenses = isAdmin
-    ? expenses
-    : expenses.filter(ex => String(ex.bidang || '').trim() === user.bidang);
+  cache.remove(failKey);
+  const token = Utilities.getUuid();
+  cache.put('sess_' + cleanEmail + '_' + token, JSON.stringify(user), SESSION_TTL_SEC);
 
-  let totalModal = 0;
-  let kasBesarModal = 0;
-  filteredModals.forEach(m => {
-    const nom = Number(m.nominal) || 0;
-    totalModal += nom;
-    if (!String(m.bidang || '').trim()) {
-      kasBesarModal += nom;
-    }
-  });
-
-  // Rumus:
-  // Terpakai = pengeluaran dari Kas + pengeluaran Dana pribadi yang sudah direimburs
-  // Sisa = total modal - terpakai
-  let terpakai = 0;
-  let belumReimburs = 0;
-  let totalSemuaBiaya = 0;
-  const breakdownMap = {};
-
-  filteredExpenses.forEach(ex => {
-    const nom = Number(ex.nominal) || 0;
-    const sumber = String(ex.dibayar_dari || '').trim();
-    const reimb = String(ex.reimburs || '').trim();
-    totalSemuaBiaya += nom;
-
-    if (sumber === 'Kas' || (sumber === 'Pribadi' && reimb === 'Sudah')) {
-      terpakai += nom;
-    }
-    if (sumber === 'Pribadi' && reimb === 'Belum') {
-      belumReimburs += nom;
-    }
-
-    // Pengelompokan: admin per bidang, pic per pos
-    const key = isAdmin ? (ex.bidang || 'Lainnya') : (ex.pos || 'Lainnya');
-    if (!breakdownMap[key]) {
-      breakdownMap[key] = { label: key, terpakai: 0, belumReimburs: 0, total: 0 };
-    }
-    breakdownMap[key].total += nom;
-    if (sumber === 'Kas' || (sumber === 'Pribadi' && reimb === 'Sudah')) {
-      breakdownMap[key].terpakai += nom;
-    }
-    if (sumber === 'Pribadi' && reimb === 'Belum') {
-      breakdownMap[key].belumReimburs += nom;
-    }
-  });
-
-  const sisa = totalModal - terpakai;
-  const persenTerpakai = totalModal > 0 ? Math.min(100, Math.round((terpakai / totalModal) * 100)) : 0;
-  const peringatanRendah = totalModal > 0 && sisa < (0.2 * totalModal);
-
-  const breakdown = Object.keys(breakdownMap)
-    .map(k => breakdownMap[k])
-    .sort((a, b) => b.total - a.total);
-
+  const eventsRes = handleGetEvents_(user);
   return {
     ok: true,
-    dashboard: {
-      isAdmin: isAdmin,
-      bidang: user.bidang,
-      totalModal: totalModal,
-      kasBesarModal: isAdmin ? kasBesarModal : null,
-      terpakai: terpakai,
-      sisa: sisa,
-      belumReimburs: belumReimburs,
-      totalSemuaBiaya: totalSemuaBiaya,
-      persenTerpakai: persenTerpakai,
-      peringatanRendah: peringatanRendah,
-      breakdown: breakdown,
-      daftarModal: isAdmin ? filteredModals.slice().reverse().slice(0, 30) : filteredModals.slice().reverse()
-    }
+    token: token,
+    user: { email: user.email, nama: user.nama, peran: user.peran, bidang: user.bidang },
+    events: eventsRes.events
   };
 }
 
-function handleGetCategories_(user) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const rows = readRows_(ss.getSheetByName(SHEET_NAMES.KATEGORI));
-  const isAdmin = user.peran === 'admin';
-
-  const categories = rows
-    .filter(r => {
-      if (isAdmin) return true;
-      return String(r.bidang || '').trim() === user.bidang && String(r.aktif || '').toLowerCase() === 'ya';
-    })
-    .map((r, idx) => ({
-      rowIndex: r._rowIndex,
-      bidang: String(r.bidang || '').trim(),
-      pos: String(r.pos || '').trim(),
-      aktif: String(r.aktif || 'tidak').trim().toLowerCase()
-    }));
-
-  return { ok: true, categories: categories };
+function authenticateSession_(email, token) {
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  if (!cleanEmail || !token) return null;
+  const cache = CacheService.getScriptCache();
+  const key = 'sess_' + cleanEmail + '_' + String(token).trim();
+  const raw = cache.get(key);
+  if (!raw) return null;
+  cache.put(key, raw, SESSION_TTL_SEC);
+  return JSON.parse(raw);
 }
 
-function handleAddExpense_(user, req) {
+function revokeSession_(email, token) {
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  if (cleanEmail && token) {
+    CacheService.getScriptCache().remove('sess_' + cleanEmail + '_' + String(token).trim());
+  }
+}
+
+function verifyUserPin_(cleanEmail, cleanPin) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName(SHEET_NAMES.PENGGUNA);
+  if (!sh) return null;
+  const values = sh.getDataRange().getDisplayValues();
+  if (values.length < 2) return null;
+
+  const headers = values[0].map(h => String(h).trim().toLowerCase());
+  const idx = (name) => headers.indexOf(name);
+  const inputHash = 'sha256:' + sha256Hex_(cleanEmail + ':' + cleanPin);
+
+  for (let i = 1; i < values.length; i++) {
+    const rowEmail = String(values[i][idx('email')] || '').trim().toLowerCase();
+    const rowPin = String(values[i][idx('pin')] || '').trim();
+    if (rowEmail === cleanEmail) {
+      const match = rowPin.indexOf('sha256:') === 0 ? (rowPin === inputHash) : (rowPin === cleanPin);
+      if (match) {
+        return {
+          _rowIndex: i + 1,
+          email: rowEmail,
+          nama: String(values[i][idx('nama')] || '').trim(),
+          peran: String(values[i][idx('peran')] || 'pic').trim().toLowerCase(),
+          bidang: String(values[i][idx('bidang')] || '').trim()
+        };
+      }
+    }
+  }
+  return null;
+}
+
+function sha256Hex_(str) {
+  const rawHash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, str, Utilities.Charset.UTF_8);
+  return rawHash.map(b => ('0' + ((b < 0 ? b + 256 : b)).toString(16)).slice(-2)).join('');
+}
+
+/* ==================== MULTI-EVENT ==================== */
+
+function handleGetEvents_(user) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName(SHEET_NAMES.EVENTS);
+  const rows = readRows_(sh);
+  const events = rows.map(r => ({
+    event_id: String(r.event_id || '').trim(),
+    nama_event: String(r.nama_event || '').trim(),
+    tanggal_event: formatDateVal_(r.tanggal_event),
+    status: String(r.status || 'aktif').trim().toLowerCase()
+  })).filter(ev => ev.event_id);
+  return { ok: true, events: events.reverse() };
+}
+
+function handleCreateEvent_(req) {
+  const nama = String(req.nama_event || '').trim();
+  const tanggal = String(req.tanggal_event || '').trim();
+  const salinKat = req.salin_kategori !== false;
+  if (!nama || !tanggal) return { ok: false, error: 'Nama event dan tanggal wajib diisi.' };
+
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
-    const tanggal = String(req.tanggal || '').trim();
-    // Hak akses: PIC dipaksa memakai bidang dari data server, bukan kiriman klien
-    const bidang = user.peran === 'admin'
-      ? String(req.bidang || '').trim()
-      : user.bidang;
-    const pos = String(req.pos || '').trim();
-    const keterangan = String(req.keterangan || '').trim();
-    const vendor = String(req.vendor || '').trim();
-    const nominal = Number(req.nominal);
-    const dibayarDari = req.dibayar_dari === 'Pribadi' ? 'Pribadi' : 'Kas';
-
-    if (!tanggal || !bidang || !pos || !nominal || nominal <= 0) {
-      return { ok: false, error: 'Tanggal, bidang, pos, dan nominal (> 0) wajib diisi.' };
-    }
-
-    // Jika dibayar dari Dana Pribadi, status reimburs otomatis "Belum"
-    const reimburs = dibayarDari === 'Pribadi' ? 'Belum' : '';
-    const tglReimburs = '';
-
-    // Simpan foto nota ke Google Drive jika ada
-    let notaUrl = '';
-    if (req.notaBase64) {
-      notaUrl = saveNotaToDrive_(req.notaBase64, bidang, tanggal, vendor);
-    }
-
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sh = ss.getSheetByName(SHEET_NAMES.PENGELUARAN);
-    const id = 'EXP-' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMddHHmmss') + '-' + Math.floor(Math.random() * 900 + 100);
-    const dibuat = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+    const sh = ss.getSheetByName(SHEET_NAMES.EVENTS);
+    const eventId = 'EVT-' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMddHHmmss');
+    sh.appendRow([eventId, nama, tanggal, 'aktif', new Date()]);
 
-    sh.appendRow([
-      id,
-      tanggal,
-      bidang,
-      pos,
-      keterangan,
-      vendor,
-      nominal,
-      dibayarDari,
-      reimburs,
-      tglReimburs,
-      notaUrl,
-      user.nama + ' (' + user.email + ')',
-      dibuat
-    ]);
-
-    return { ok: true, id: id, nota_url: notaUrl };
+    if (salinKat) {
+      const shKat = ss.getSheetByName(SHEET_NAMES.KATEGORI);
+      seedDefaultCategories_(shKat, eventId);
+    }
+    return { ok: true, event: { event_id: eventId, nama_event: nama, tanggal_event: tanggal, status: 'aktif' } };
   } finally {
     lock.releaseLock();
   }
 }
 
-function handleGetExpenses_(user) {
+/* ==================== BOOTSTRAP & DASHBOARD KAS INDUK VS PIC ==================== */
+
+function handleGetBootstrap_(user, eventId) {
+  const eid = String(eventId || '').trim();
+  if (!eid) return { ok: false, error: 'Event belum dipilih.' };
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const rows = readRows_(ss.getSheetByName(SHEET_NAMES.PENGELUARAN));
   const isAdmin = user.peran === 'admin';
 
-  // Filter ketat di server agar data bidang lain tidak pernah dikirim ke HP PIC
-  const filtered = isAdmin
-    ? rows
-    : rows.filter(r => String(r.bidang || '').trim() === user.bidang);
+  // 1. Kategori per event
+  const allCats = readRows_(ss.getSheetByName(SHEET_NAMES.KATEGORI))
+    .filter(r => String(r.event_id || '').trim() === eid);
 
-  const result = filtered.slice().reverse().map(r => ({
+  const categories = allCats
+    .filter(r => isAdmin || (String(r.bidang || '').trim() === user.bidang && String(r.aktif || '').toLowerCase() === 'ya'))
+    .map(r => ({
+      rowIndex: r._rowIndex,
+      bidang: String(r.bidang || '').trim(),
+      kategori: String(r.kategori || r.pos || '').trim(),
+      aktif: String(r.aktif || 'tidak').trim().toLowerCase()
+    }));
+
+  // 2. Modal & Alokasi per event
+  const modals = readRows_(ss.getSheetByName(SHEET_NAMES.MODAL))
+    .filter(m => String(m.event_id || '').trim() === eid);
+  const alokasi = readRows_(ss.getSheetByName(SHEET_NAMES.ALOKASI))
+    .filter(a => String(a.event_id || '').trim() === eid);
+
+  // 3. Pengeluaran per event (PIC hanya menerima bidangnya sendiri)
+  const allExp = readRows_(ss.getSheetByName(SHEET_NAMES.PENGELUARAN))
+    .filter(ex => String(ex.event_id || '').trim() === eid);
+  const filteredExp = isAdmin
+    ? allExp
+    : allExp.filter(ex => String(ex.bidang || '').trim() === user.bidang);
+
+  let dashboard;
+  if (isAdmin) {
+    let totalModal = 0;
+    modals.forEach(m => { totalModal += Number(m.nominal) || 0; });
+
+    let totalAlokasi = 0;
+    const picWallet = {}; // per bidang: diterima, terpakai, sisa, belumReimburs
+    alokasi.forEach(a => {
+      const nom = Number(a.nominal) || 0;
+      const b = String(a.bidang || '').trim();
+      totalAlokasi += nom;
+      if (!picWallet[b]) picWallet[b] = { bidang: b, diterima: 0, terpakai: 0, sisa: 0, belumReimburs: 0 };
+      picWallet[b].diterima += nom;
+    });
+
+    let belanjaInduk = 0;
+    let belanjaPicTotal = 0;
+    let reimbSudah = 0;
+    let reimbBelum = 0;
+    const breakdownMap = {};
+
+    filteredExp.forEach(ex => {
+      const nom = Number(ex.nominal) || 0;
+      const sumber = String(ex.dibayar_dari || '').trim();
+      const reimb = String(ex.reimburs || '').trim();
+      const b = String(ex.bidang || 'Lainnya').trim();
+
+      if (!picWallet[b]) picWallet[b] = { bidang: b, diterima: 0, terpakai: 0, sisa: 0, belumReimburs: 0 };
+      if (!breakdownMap[b]) breakdownMap[b] = { label: b, terpakai: 0, belumReimburs: 0 };
+
+      if (sumber === 'Kas Induk') {
+        belanjaInduk += nom;
+        breakdownMap[b].terpakai += nom;
+      } else if (sumber === 'Kas PIC' || sumber === 'Kas') {
+        belanjaPicTotal += nom;
+        picWallet[b].terpakai += nom;
+        breakdownMap[b].terpakai += nom;
+      } else if (sumber === 'Pribadi') {
+        if (reimb === 'Sudah') {
+          reimbSudah += nom;
+          breakdownMap[b].terpakai += nom;
+        } else {
+          reimbBelum += nom;
+          picWallet[b].belumReimburs += nom;
+          breakdownMap[b].belumReimburs += nom;
+        }
+      }
+    });
+
+    const picList = Object.keys(picWallet).map(k => {
+      const w = picWallet[k];
+      w.sisa = w.diterima - w.terpakai;
+      return w;
+    });
+
+    const sisaKasInduk = totalModal - totalAlokasi - belanjaInduk - reimbSudah;
+    const totalBelanjaRiil = belanjaInduk + belanjaPicTotal + reimbSudah;
+    const sisaEvent = totalModal - totalBelanjaRiil;
+    const persen = totalModal > 0 ? Math.min(100, Math.round((totalBelanjaRiil / totalModal) * 100)) : 0;
+
+    dashboard = {
+      isAdmin: true,
+      totalModal: totalModal,
+      totalAlokasi: totalAlokasi,
+      sisaKasInduk: sisaKasInduk,
+      totalBelanjaRiil: totalBelanjaRiil,
+      sisaEvent: sisaEvent,
+      belumReimburs: reimbBelum,
+      persenTerpakai: persen,
+      peringatanRendah: totalModal > 0 && sisaEvent < (0.2 * totalModal),
+      picWallets: picList,
+      breakdown: Object.keys(breakdownMap).map(k => breakdownMap[k]).sort((a, b) => b.terpakai - a.terpakai),
+      daftarModal: modals.slice().reverse().slice(0, 20),
+      daftarAlokasi: alokasi.slice().reverse().slice(0, 20)
+    };
+  } else {
+    // PIC: hanya melihat Kas PIC bidangnya sendiri (tidak menerima Kas Induk / bidang lain)
+    const alokasiBidang = alokasi.filter(a => String(a.bidang || '').trim() === user.bidang);
+    let danaDiterima = 0;
+    alokasiBidang.forEach(a => { danaDiterima += Number(a.nominal) || 0; });
+
+    let terpakaiPic = 0;
+    let belumReimb = 0;
+    const breakdownMap = {};
+
+    filteredExp.forEach(ex => {
+      const nom = Number(ex.nominal) || 0;
+      const sumber = String(ex.dibayar_dari || '').trim();
+      const reimb = String(ex.reimburs || '').trim();
+      const kat = String(ex.kategori || ex.pos || 'Lainnya').trim();
+      if (!breakdownMap[kat]) breakdownMap[kat] = { label: kat, terpakai: 0, belumReimburs: 0 };
+
+      if (sumber === 'Kas PIC' || sumber === 'Kas') {
+        terpakaiPic += nom;
+        breakdownMap[kat].terpakai += nom;
+      } else if (sumber === 'Pribadi') {
+        if (reimb === 'Sudah') {
+          breakdownMap[kat].terpakai += nom;
+        } else {
+          belumReimb += nom;
+          breakdownMap[kat].belumReimburs += nom;
+        }
+      }
+    });
+
+    const sisaPic = danaDiterima - terpakaiPic;
+    const persen = danaDiterima > 0 ? Math.min(100, Math.round((terpakaiPic / danaDiterima) * 100)) : 0;
+
+    dashboard = {
+      isAdmin: false,
+      bidang: user.bidang,
+      danaDiterima: danaDiterima,
+      terpakaiPic: terpakaiPic,
+      sisaPic: sisaPic,
+      belumReimburs: belumReimb,
+      persenTerpakai: persen,
+      peringatanRendah: danaDiterima > 0 && sisaPic < (0.2 * danaDiterima),
+      breakdown: Object.keys(breakdownMap).map(k => breakdownMap[k]).sort((a, b) => b.terpakai - a.terpakai),
+      daftarAlokasi: alokasiBidang.slice().reverse()
+    };
+  }
+
+  const expenses = filteredExp.slice().reverse().map(r => ({
     id: r.id,
+    event_id: r.event_id,
     tanggal: formatDateVal_(r.tanggal),
     bidang: r.bidang,
-    pos: r.pos,
+    kategori: r.kategori || r.pos || '',
     keterangan: r.keterangan,
     vendor: r.vendor,
     nominal: Number(r.nominal) || 0,
     dibayar_dari: r.dibayar_dari,
     reimburs: r.reimburs,
     tgl_reimburs: formatDateVal_(r.tgl_reimburs),
-    nota_url: r.nota_url,
-    oleh: r.oleh,
-    dibuat: r.dibuat
+    bukti_reimburs_url: r.bukti_reimburs_url || '',
+    nota_url: r.nota_url || '',
+    oleh: r.oleh
   }));
 
-  return { ok: true, expenses: result };
+  return {
+    ok: true,
+    user: { email: user.email, nama: user.nama, peran: user.peran, bidang: user.bidang },
+    dashboard: dashboard,
+    categories: categories,
+    expenses: expenses
+  };
 }
 
-function handleMarkReimbursed_(req) {
-  const id = String(req.id || '').trim();
-  const tglReimburs = String(req.tgl_reimburs || '').trim() ||
-    Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+/* ==================== TRANSAKSI & KATEGORI ==================== */
 
-  if (!id) return { ok: false, error: 'ID pengeluaran wajib diisi.' };
+function handleAddModal_(req) {
+  const eid = String(req.event_id || '').trim();
+  const tanggal = String(req.tanggal || '').trim();
+  const nominal = Number(req.nominal);
+  const sumber = String(req.sumber || '').trim();
+  const catatan = String(req.catatan || '').trim();
+  if (!eid || !tanggal || !nominal || nominal <= 0 || !sumber) {
+    return { ok: false, error: 'Event, tanggal, nominal (> 0), dan sumber modal wajib diisi.' };
+  }
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.MODAL);
+    const id = 'MOD-' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMddHHmmss');
+    sh.appendRow([id, eid, tanggal, nominal, sumber, catatan]);
+    return { ok: true, id: id };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function handleAddAlokasi_(user, req) {
+  const eid = String(req.event_id || '').trim();
+  const tanggal = String(req.tanggal || '').trim();
+  const bidang = String(req.bidang || '').trim();
+  const nominal = Number(req.nominal);
+  const catatan = String(req.catatan || '').trim();
+  if (!eid || !tanggal || !bidang || !nominal || nominal <= 0) {
+    return { ok: false, error: 'Event, tanggal, bidang tujuan, dan nominal (> 0) wajib diisi.' };
+  }
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.ALOKASI);
+    const id = 'ALK-' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMddHHmmss');
+    sh.appendRow([id, eid, tanggal, bidang, nominal, catatan, user.nama]);
+    return { ok: true, id: id };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function isValidActiveCategory_(ss, eventId, bidang, kategori) {
+  const rows = readRows_(ss.getSheetByName(SHEET_NAMES.KATEGORI));
+  return rows.some(r =>
+    String(r.event_id || '').trim() === eventId &&
+    String(r.bidang || '').trim() === bidang &&
+    String(r.kategori || r.pos || '').trim() === kategori &&
+    String(r.aktif || '').trim().toLowerCase() === 'ya'
+  );
+}
+
+function handleAddExpense_(user, req) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const eid = String(req.event_id || '').trim();
+    const tanggal = String(req.tanggal || '').trim();
+    const bidang = user.peran === 'admin' ? String(req.bidang || '').trim() : user.bidang;
+    const kategori = String(req.kategori || '').trim();
+    const keterangan = String(req.keterangan || '').trim();
+    const vendor = String(req.vendor || '').trim(); // opsional
+    const nominal = Number(req.nominal);
+
+    // Sumber dana: Admin bisa pilih Kas Induk / Kas PIC / Pribadi; PIC hanya Kas PIC / Pribadi
+    let dibayarDari = String(req.dibayar_dari || 'Kas PIC').trim();
+    if (user.peran !== 'admin' && dibayarDari === 'Kas Induk') {
+      dibayarDari = 'Kas PIC';
+    }
+    if (['Kas Induk', 'Kas PIC', 'Pribadi'].indexOf(dibayarDari) === -1) {
+      dibayarDari = 'Kas PIC';
+    }
+
+    if (!eid || !tanggal || !bidang || !kategori || !nominal || nominal <= 0) {
+      return { ok: false, error: 'Event, tanggal, bidang, kategori, dan nominal (> 0) wajib diisi.' };
+    }
+    if (!isValidActiveCategory_(ss, eid, bidang, kategori)) {
+      return { ok: false, error: 'Kategori tidak ditemukan atau sedang nonaktif pada event ini.' };
+    }
+
+    const reimburs = dibayarDari === 'Pribadi' ? 'Belum' : '';
+    let notaUrl = '';
+    if (req.notaBase64) {
+      notaUrl = saveImageToDrive_(req.notaBase64, 'Nota_' + bidang + '_' + tanggal);
+    }
+
+    const sh = ss.getSheetByName(SHEET_NAMES.PENGELUARAN);
+    const id = 'EXP-' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMddHHmmss') + '-' + Math.floor(Math.random() * 900 + 100);
+    const dibuat = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+
+    sh.appendRow([
+      id, eid, tanggal, bidang, kategori, keterangan,
+      vendor, nominal, dibayarDari, reimburs, '', '', notaUrl,
+      user.nama + ' (' + user.email + ')', dibuat
+    ]);
+    return { ok: true, id: id, nota_url: notaUrl };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function handleEditExpense_(user, req) {
+  const id = String(req.id || '').trim();
+  const tanggal = String(req.tanggal || '').trim();
+  const kategori = String(req.kategori || '').trim();
+  const vendor = String(req.vendor || '').trim();
+  const keterangan = String(req.keterangan || '').trim();
+  const nominal = Number(req.nominal);
+
+  if (!id || !tanggal || !kategori || !nominal || nominal <= 0) {
+    return { ok: false, error: 'Data edit tidak lengkap atau nominal tidak valid.' };
+  }
 
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
@@ -364,22 +575,35 @@ function handleMarkReimbursed_(req) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sh = ss.getSheetByName(SHEET_NAMES.PENGELUARAN);
     const data = sh.getDataRange().getValues();
-    if (data.length < 2) return { ok: false, error: 'Data pengeluaran kosong.' };
+    if (data.length < 2) return { ok: false, error: 'Data kosong.' };
 
     const headers = data[0];
-    const idCol = headers.indexOf('id');
-    const dibayarCol = headers.indexOf('dibayar_dari');
-    const reimbCol = headers.indexOf('reimburs');
-    const tglCol = headers.indexOf('tgl_reimburs');
+    const col = (name) => headers.indexOf(name);
 
     for (let i = 1; i < data.length; i++) {
-      if (String(data[i][idCol]).trim() === id) {
-        if (String(data[i][dibayarCol]).trim() !== 'Pribadi') {
-          return { ok: false, error: 'Transaksi ini bukan dibayar dari dana pribadi.' };
+      if (String(data[i][col('id')]).trim() === id) {
+        const eid = String(data[i][col('event_id')]).trim();
+        const rowBidang = String(data[i][col('bidang')]).trim();
+        const rowReimb = String(data[i][col('reimburs')]).trim();
+
+        if (user.peran !== 'admin') {
+          if (rowBidang !== user.bidang) return { ok: false, error: 'Akses ditolak.' };
+          if (rowReimb === 'Sudah') return { ok: false, error: 'Transaksi sudah direimburs.' };
         }
-        sh.getRange(i + 1, reimbCol + 1).setValue('Sudah');
-        sh.getRange(i + 1, tglCol + 1).setValue(tglReimburs);
-        return { ok: true, id: id, tgl_reimburs: tglReimburs };
+
+        const targetBidang = (user.peran === 'admin' && req.bidang) ? String(req.bidang).trim() : rowBidang;
+        if (!isValidActiveCategory_(ss, eid, targetBidang, kategori)) {
+          return { ok: false, error: 'Kategori tidak valid atau nonaktif.' };
+        }
+
+        const r = i + 1;
+        sh.getRange(r, col('tanggal') + 1).setValue(tanggal);
+        sh.getRange(r, col('bidang') + 1).setValue(targetBidang);
+        sh.getRange(r, col('kategori') + 1).setValue(kategori);
+        sh.getRange(r, col('vendor') + 1).setValue(vendor);
+        sh.getRange(r, col('keterangan') + 1).setValue(keterangan);
+        sh.getRange(r, col('nominal') + 1).setValue(nominal);
+        return { ok: true, id: id };
       }
     }
     return { ok: false, error: 'Transaksi tidak ditemukan.' };
@@ -388,35 +612,52 @@ function handleMarkReimbursed_(req) {
   }
 }
 
-function handleAddModal_(req) {
-  const tanggal = String(req.tanggal || '').trim();
-  const nominal = Number(req.nominal);
-  const sumber = String(req.sumber || '').trim();
-  const bidang = String(req.bidang || '').trim(); // kosong = Kas Besar
-  const catatan = String(req.catatan || '').trim();
-
-  if (!tanggal || !nominal || nominal <= 0 || !sumber) {
-    return { ok: false, error: 'Tanggal, nominal (> 0), dan sumber modal wajib diisi.' };
-  }
+function handleMarkReimbursed_(req) {
+  const id = String(req.id || '').trim();
+  const tglReimburs = String(req.tgl_reimburs || '').trim() ||
+    Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  if (!id) return { ok: false, error: 'ID pengeluaran wajib diisi.' };
 
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sh = ss.getSheetByName(SHEET_NAMES.MODAL);
-    const id = 'MOD-' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMddHHmmss');
-    sh.appendRow([id, tanggal, nominal, sumber, bidang, catatan]);
-    return { ok: true, id: id };
+    const sh = ss.getSheetByName(SHEET_NAMES.PENGELUARAN);
+    const data = sh.getDataRange().getValues();
+    if (data.length < 2) return { ok: false, error: 'Data kosong.' };
+
+    const headers = data[0];
+    const col = (name) => headers.indexOf(name);
+
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][col('id')]).trim() === id) {
+        if (String(data[i][col('dibayar_dari')]).trim() !== 'Pribadi') {
+          return { ok: false, error: 'Bukan transaksi dana pribadi.' };
+        }
+        let buktiUrl = '';
+        if (req.buktiBase64) {
+          buktiUrl = saveImageToDrive_(req.buktiBase64, 'BuktiReimb_' + id);
+        }
+        const r = i + 1;
+        sh.getRange(r, col('reimburs') + 1).setValue('Sudah');
+        sh.getRange(r, col('tgl_reimburs') + 1).setValue(tglReimburs);
+        if (buktiUrl) sh.getRange(r, col('bukti_reimburs_url') + 1).setValue(buktiUrl);
+        return { ok: true, id: id, bukti_reimburs_url: buktiUrl };
+      }
+    }
+    return { ok: false, error: 'Transaksi tidak ditemukan.' };
   } finally {
     lock.releaseLock();
   }
 }
 
-function handleAddCategory_(req) {
-  const bidang = String(req.bidang || '').trim();
-  const pos = String(req.pos || '').trim();
-  if (!bidang || !pos) {
-    return { ok: false, error: 'Nama bidang dan pos biaya wajib diisi.' };
+function handleAddCategory_(user, req) {
+  const eid = String(req.event_id || '').trim();
+  // PIC hanya bisa menambah kategori untuk bidangnya sendiri
+  const bidang = user.peran === 'admin' ? String(req.bidang || '').trim() : user.bidang;
+  const kategori = String(req.kategori || '').trim();
+  if (!eid || !bidang || !kategori) {
+    return { ok: false, error: 'Event, bidang, dan nama kategori wajib diisi.' };
   }
 
   const lock = LockService.getScriptLock();
@@ -424,15 +665,13 @@ function handleAddCategory_(req) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sh = ss.getSheetByName(SHEET_NAMES.KATEGORI);
-    const existing = readRows_(sh);
-    const duplicate = existing.some(r =>
-      String(r.bidang).trim().toLowerCase() === bidang.toLowerCase() &&
-      String(r.pos).trim().toLowerCase() === pos.toLowerCase()
+    const dup = readRows_(sh).some(r =>
+      String(r.event_id || '').trim() === eid &&
+      String(r.bidang || '').trim().toLowerCase() === bidang.toLowerCase() &&
+      String(r.kategori || r.pos || '').trim().toLowerCase() === kategori.toLowerCase()
     );
-    if (duplicate) {
-      return { ok: false, error: 'Kategori dengan bidang dan pos tersebut sudah ada.' };
-    }
-    sh.appendRow([bidang, pos, 'ya']);
+    if (dup) return { ok: false, error: 'Kategori tersebut sudah ada di event ini.' };
+    sh.appendRow([eid, bidang, kategori, 'ya']);
     return { ok: true };
   } finally {
     lock.releaseLock();
@@ -442,17 +681,72 @@ function handleAddCategory_(req) {
 function handleToggleCategory_(req) {
   const rowIndex = Number(req.rowIndex);
   const aktif = String(req.aktif || '').toLowerCase() === 'ya' ? 'ya' : 'tidak';
-  if (!rowIndex || rowIndex < 2) {
-    return { ok: false, error: 'Baris kategori tidak valid.' };
+  if (!rowIndex || rowIndex < 2) return { ok: false, error: 'Baris kategori tidak valid.' };
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.KATEGORI).getRange(rowIndex, 4).setValue(aktif);
+    return { ok: true };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/* ==================== KELOLA PENGGUNA (ADMIN) ==================== */
+
+function handleGetUsers_() {
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.PENGGUNA);
+  const rows = readRows_(sh);
+  return {
+    ok: true,
+    users: rows.map(r => ({
+      email: String(r.email || '').trim().toLowerCase(),
+      nama: String(r.nama || '').trim(),
+      peran: String(r.peran || 'pic').trim().toLowerCase(),
+      bidang: String(r.bidang || '').trim()
+    }))
+  };
+}
+
+function handleSaveUser_(req) {
+  const email = String(req.target_email || '').trim().toLowerCase();
+  const nama = String(req.nama || '').trim();
+  const pin = String(req.pin || '').trim();
+  const peran = req.peran === 'admin' ? 'admin' : 'pic';
+  const bidang = peran === 'admin' ? 'Semua' : String(req.bidang || '').trim();
+
+  if (!email || !nama || (!bidang && peran === 'pic')) {
+    return { ok: false, error: 'Email, nama, dan bidang wajib diisi.' };
   }
 
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sh = ss.getSheetByName(SHEET_NAMES.KATEGORI);
-    sh.getRange(rowIndex, 3).setValue(aktif);
-    return { ok: true };
+    const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.PENGGUNA);
+    const rows = readRows_(sh);
+    const existing = rows.find(r => String(r.email || '').trim().toLowerCase() === email);
+
+    if (existing) {
+      sh.getRange(existing._rowIndex, 2).setValue(nama);
+      sh.getRange(existing._rowIndex, 4).setValue(peran);
+      sh.getRange(existing._rowIndex, 5).setValue(bidang);
+      if (pin) {
+        if (!/^\d{4,8}$/.test(pin)) return { ok: false, error: 'PIN harus 4–8 digit angka.' };
+        const c = sh.getRange(existing._rowIndex, 3);
+        c.setNumberFormat('@');
+        c.setValue('sha256:' + sha256Hex_(email + ':' + pin));
+      }
+      return { ok: true, mode: 'updated' };
+    } else {
+      if (!/^\d{4,8}$/.test(pin)) return { ok: false, error: 'PIN pengguna baru wajib 4–8 digit angka.' };
+      const nextRow = sh.getLastRow() + 1;
+      sh.appendRow([email, nama, '', peran, bidang]);
+      const c = sh.getRange(nextRow, 3);
+      c.setNumberFormat('@');
+      c.setValue('sha256:' + sha256Hex_(email + ':' + pin));
+      return { ok: true, mode: 'created' };
+    }
   } finally {
     lock.releaseLock();
   }
@@ -460,70 +754,29 @@ function handleToggleCategory_(req) {
 
 function handleChangePin_(user, req) {
   const pinBaru = String(req.pinBaru || '').trim();
-  if (!/^\d{4,8}$/.test(pinBaru)) {
-    return { ok: false, error: 'PIN baru harus berupa 4 hingga 8 digit angka.' };
-  }
+  if (!/^\d{4,8}$/.test(pinBaru)) return { ok: false, error: 'PIN baru harus 4–8 digit angka.' };
 
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sh = ss.getSheetByName(SHEET_NAMES.PENGGUNA);
-    // Pastikan format teks agar angka 0 di depan tidak hilang
-    const cell = sh.getRange(user._rowIndex, 3);
-    cell.setNumberFormat('@');
-    cell.setValue(pinBaru);
+    const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.PENGGUNA);
+    const c = sh.getRange(user._rowIndex, 3);
+    c.setNumberFormat('@');
+    c.setValue('sha256:' + sha256Hex_(user.email + ':' + pinBaru));
     return { ok: true };
   } finally {
     lock.releaseLock();
   }
 }
 
-/* ==================== HELPER & KEAMANAN ==================== */
+/* ==================== HELPER ==================== */
 
-function authenticate_(email, pin) {
-  const cleanEmail = String(email || '').trim().toLowerCase();
-  const cleanPin = String(pin || '').trim();
-  if (!cleanEmail || !cleanPin) return null;
-
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sh = ss.getSheetByName(SHEET_NAMES.PENGGUNA);
-  if (!sh) return null;
-
-  // Gunakan getDisplayValues() agar PIN berawalan '0' terbaca persis sebagai teks
-  const values = sh.getDataRange().getDisplayValues();
-  if (values.length < 2) return null;
-
-  const headers = values[0].map(h => String(h).trim().toLowerCase());
-  const idxEmail = headers.indexOf('email');
-  const idxNama = headers.indexOf('nama');
-  const idxPin = headers.indexOf('pin');
-  const idxPeran = headers.indexOf('peran');
-  const idxBidang = headers.indexOf('bidang');
-
-  for (let i = 1; i < values.length; i++) {
-    const rowEmail = String(values[i][idxEmail] || '').trim().toLowerCase();
-    const rowPin = String(values[i][idxPin] || '').trim();
-    if (rowEmail === cleanEmail && rowPin === cleanPin) {
-      return {
-        _rowIndex: i + 1,
-        email: rowEmail,
-        nama: String(values[i][idxNama] || '').trim(),
-        peran: String(values[i][idxPeran] || 'pic').trim().toLowerCase(),
-        bidang: String(values[i][idxBidang] || '').trim()
-      };
-    }
-  }
-  return null;
-}
-
-function saveNotaToDrive_(base64Data, bidang, tanggal, vendor) {
+function saveImageToDrive_(base64Data, prefix) {
   const folder = getOrCreateNotaFolder_();
   const cleanBase64 = base64Data.replace(/^data:image\/\w+;base64,/, '');
   const bytes = Utilities.base64Decode(cleanBase64);
-  const safeVendor = (vendor || 'nota').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 25);
-  const fileName = 'Nota_' + bidang + '_' + tanggal + '_' + safeVendor + '_' + Date.now() + '.jpg';
-  const blob = Utilities.newBlob(bytes, 'image/jpeg', fileName);
+  const safePrefix = String(prefix || 'File').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40);
+  const blob = Utilities.newBlob(bytes, 'image/jpeg', safePrefix + '_' + Date.now() + '.jpg');
   const file = folder.createFile(blob);
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   return file.getUrl();
@@ -531,21 +784,14 @@ function saveNotaToDrive_(base64Data, bidang, tanggal, vendor) {
 
 function getOrCreateNotaFolder_() {
   const folders = DriveApp.getFoldersByName(DRIVE_FOLDER_NAME);
-  let folder;
-  if (folders.hasNext()) {
-    folder = folders.next();
-  } else {
-    folder = DriveApp.createFolder(DRIVE_FOLDER_NAME);
-  }
+  const folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(DRIVE_FOLDER_NAME);
   folder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   return folder;
 }
 
 function ensureSheet_(ss, name, headers) {
   let sh = ss.getSheetByName(name);
-  if (!sh) {
-    sh = ss.insertSheet(name);
-  }
+  if (!sh) sh = ss.insertSheet(name);
   if (sh.getLastRow() === 0) {
     sh.appendRow(headers);
     sh.getRange(1, 1, 1, headers.length).setFontWeight('bold');
@@ -561,9 +807,7 @@ function readRows_(sh) {
   const rows = [];
   for (let i = 1; i < data.length; i++) {
     const obj = { _rowIndex: i + 1 };
-    for (let j = 0; j < headers.length; j++) {
-      obj[headers[j]] = data[i][j];
-    }
+    for (let j = 0; j < headers.length; j++) obj[headers[j]] = data[i][j];
     rows.push(obj);
   }
   return rows;
@@ -571,14 +815,10 @@ function readRows_(sh) {
 
 function formatDateVal_(val) {
   if (!val) return '';
-  if (val instanceof Date) {
-    return Utilities.formatDate(val, Session.getScriptTimeZone(), 'yyyy-MM-dd');
-  }
+  if (val instanceof Date) return Utilities.formatDate(val, Session.getScriptTimeZone(), 'yyyy-MM-dd');
   return String(val).trim();
 }
 
 function jsonResponse_(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
