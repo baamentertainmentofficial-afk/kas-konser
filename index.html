@@ -4,240 +4,331 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#6366f1" />
-  <title>Kas Konser - Pencatat Pengeluaran</title>
+  <title>FinStage — Powered by Baam Entertainment</title>
   <link rel="manifest" href="./manifest.json" />
   <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
   <link rel="apple-touch-icon" href="./icon-192.png" />
   <style>
     :root {
-      --bg: #f8fafc;
+      --bg: #eef2ff;
       --surface: #ffffff;
-      --surface-2: #f1f5f9;
+      --surface-2: #e2e8f0;
       --text: #0f172a;
-      --muted: #64748b;
-      --border: #e2e8f0;
-      --primary: #6366f1;
-      --primary-dark: #4f46e5;
+      --muted: #475569;
+      --border: #1e293b;
+      --primary: #4f46e5;
+      --primary-shadow: #312e81;
+      --accent: #f59e0b;
       --success: #16a34a;
-      --warning: #d97706;
+      --success-shadow: #14532d;
+      --warning: #ea580c;
       --danger: #dc2626;
-      --radius: 14px;
-      --shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+      --radius: 12px;
     }
 
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
-        --bg: #0f172a;
-        --surface: #1e293b;
-        --surface-2: #334155;
+        --bg: #0b1020;
+        --surface: #151c32;
+        --surface-2: #1e293b;
         --text: #f8fafc;
         --muted: #94a3b8;
-        --border: #334155;
-        --primary: #818cf8;
-        --primary-dark: #6366f1;
-        --shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+        --border: #3b4b75;
+        --primary: #6366f1;
+        --primary-shadow: #3730a3;
+        --accent: #fbbf24;
       }
     }
 
     :root[data-theme="dark"] {
-      --bg: #0f172a;
-      --surface: #1e293b;
-      --surface-2: #334155;
+      --bg: #0b1020;
+      --surface: #151c32;
+      --surface-2: #1e293b;
       --text: #f8fafc;
       --muted: #94a3b8;
-      --border: #334155;
-      --primary: #818cf8;
-      --primary-dark: #6366f1;
-      --shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+      --border: #3b4b75;
+      --primary: #6366f1;
+      --primary-shadow: #3730a3;
+      --accent: #fbbf24;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: "Segoe UI", Roboto, system-ui, sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.45;
-      padding-bottom: 84px;
+      padding-bottom: 88px;
     }
 
-    .container { max-width: 560px; margin: 0 auto; padding: 16px; }
-    header.topbar {
-      position: sticky; top: 0; z-index: 20;
+    .container { max-width: 580px; margin: 0 auto; padding: 14px; }
+
+    /* Arcade HUD Header */
+    header.hud {
+      position: sticky; top: 0; z-index: 25;
       background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 16px;
-      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 3px solid var(--border);
+      padding: 10px 14px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
     }
-    .topbar h1 { font-size: 17px; margin: 0; font-weight: 700; }
-    .topbar .badge-role {
-      font-size: 11px; font-weight: 600; padding: 4px 10px;
-      border-radius: 999px; background: var(--surface-2); color: var(--primary);
+    .brand-title { font-size: 18px; font-weight: 900; letter-spacing: 0.4px; margin: 0; color: var(--primary); }
+    .brand-sub { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+    .hud-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    .hud-chip {
+      font-size: 11px; font-weight: 800; padding: 4px 9px; border-radius: 8px;
+      border: 2px solid var(--border); background: var(--surface-2); color: var(--text);
+      cursor: pointer;
     }
+    .hud-chip.lv { background: var(--primary); color: #fff; border-color: var(--primary-shadow); }
 
+    /* Quest / Inventory Cards */
     .card {
       background: var(--surface);
-      border: 1px solid var(--border);
+      border: 2px solid var(--border);
+      box-shadow: 0 4px 0 var(--border);
       border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: var(--shadow);
+      padding: 15px;
+      margin-bottom: 14px;
     }
-    .card h2, .card h3 { margin: 0 0 10px; font-size: 15px; }
+    .card h2, .card h3 { margin: 0 0 10px; font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; }
 
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .stat-box {
       background: var(--surface-2);
+      border: 2px solid var(--border);
       border-radius: 10px;
-      padding: 12px;
+      padding: 10px 12px;
     }
-    .stat-label { font-size: 12px; color: var(--muted); }
-    .stat-val { font-size: 16px; font-weight: 700; margin-top: 2px; word-break: break-word; }
+    .stat-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+    .stat-val { font-size: 15px; font-weight: 800; margin-top: 2px; word-break: break-word; }
 
-    .progress-wrap {
-      width: 100%; height: 10px; background: var(--surface-2);
-      border-radius: 999px; overflow: hidden; margin: 10px 0 6px;
+    /* HP / Mana Progress Bar */
+    .hp-wrap {
+      width: 100%; height: 14px; background: var(--bg);
+      border: 2px solid var(--border); border-radius: 8px;
+      overflow: hidden; margin: 8px 0 4px;
     }
-    .progress-bar { height: 100%; background: var(--primary); transition: width 0.3s ease; }
-    .progress-bar.warn { background: var(--danger); }
+    .hp-bar { height: 100%; background: var(--success); transition: width 0.35s ease; }
+    .hp-bar.mid { background: var(--accent); }
+    .hp-bar.low { background: var(--danger); animation: pulse 1.2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 
     .alert {
-      padding: 12px; border-radius: 10px; font-size: 13px; margin-bottom: 12px;
-      border: 1px solid transparent;
+      padding: 10px 12px; border-radius: 10px; font-size: 13px; font-weight: 600;
+      margin-bottom: 12px; border: 2px solid;
     }
-    .alert-danger { background: rgba(220, 38, 38, 0.12); border-color: rgba(220, 38, 38, 0.35); color: var(--danger); }
-    .alert-info { background: rgba(99, 102, 241, 0.12); border-color: rgba(99, 102, 241, 0.3); color: var(--primary); }
-    .alert-success { background: rgba(22, 163, 74, 0.12); border-color: rgba(22, 163, 74, 0.3); color: var(--success); }
+    .alert-danger { background: rgba(220, 38, 38, 0.14); border-color: var(--danger); color: var(--danger); }
+    .alert-info { background: rgba(99, 102, 241, 0.14); border-color: var(--primary); color: var(--primary); }
+    .alert-success { background: rgba(22, 163, 74, 0.14); border-color: var(--success); color: var(--success); }
+    .alert-warn { background: rgba(245, 158, 11, 0.16); border-color: var(--accent); color: var(--warning); }
 
-    label { display: block; font-size: 13px; font-weight: 600; margin: 10px 0 4px; }
-    input, select, textarea {
-      width: 100%; padding: 11px 12px; font-size: 15px;
-      border: 1px solid var(--border); border-radius: 10px;
-      background: var(--bg); color: var(--text);
-      font-family: inherit;
+    label { display: block; font-size: 12px; font-weight: 700; margin: 10px 0 4px; text-transform: uppercase; color: var(--muted); }
+    input, select {
+      width: 100%; padding: 10px 12px; font-size: 15px;
+      border: 2px solid var(--border); border-radius: 10px;
+      background: var(--bg); color: var(--text); font-family: inherit;
     }
-    input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); border-color: transparent; }
+    input:focus, select:focus { outline: none; border-color: var(--primary); }
 
+    /* Tactile 3D Game Buttons */
     .btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-      width: 100%; padding: 12px 16px; border: none; border-radius: 10px;
-      font-size: 15px; font-weight: 600; cursor: pointer;
-      background: var(--primary); color: #fff; margin-top: 12px;
+      width: 100%; padding: 11px 16px; border: 2px solid var(--border); border-radius: 10px;
+      font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px;
+      cursor: pointer; background: var(--primary); color: #fff;
+      box-shadow: 0 3px 0 var(--primary-shadow); margin-top: 12px;
+      transition: transform 0.08s, box-shadow 0.08s;
     }
+    .btn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--primary-shadow); }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-secondary { background: var(--surface-2); color: var(--text); }
-    .btn-success { background: var(--success); color: #fff; }
-    .btn-sm { padding: 7px 12px; font-size: 13px; width: auto; margin-top: 6px; }
+    .btn-secondary { background: var(--surface-2); color: var(--text); box-shadow: 0 3px 0 var(--border); }
+    .btn-success { background: var(--success); color: #fff; box-shadow: 0 3px 0 var(--success-shadow); }
+    .btn-sm { padding: 6px 10px; font-size: 11px; width: auto; margin-top: 0; }
 
-    .list-item {
-      border-bottom: 1px solid var(--border);
-      padding: 12px 0;
-    }
+    .list-item { border-bottom: 1px dashed var(--border); padding: 11px 0; }
     .list-item:last-child { border-bottom: none; padding-bottom: 0; }
     .row-between { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
     .muted { color: var(--muted); font-size: 12px; }
 
     .pill {
-      display: inline-block; font-size: 11px; font-weight: 600;
-      padding: 2px 8px; border-radius: 999px;
+      display: inline-block; font-size: 10px; font-weight: 800; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 6px; border: 1.5px solid currentColor;
     }
-    .pill-warn { background: rgba(217, 119, 6, 0.15); color: var(--warning); }
-    .pill-ok { background: rgba(22, 163, 74, 0.15); color: var(--success); }
-    .pill-kas { background: rgba(99, 102, 241, 0.15); color: var(--primary); }
+    .pill-warn { color: var(--warning); background: rgba(234, 88, 12, 0.12); }
+    .pill-ok { color: var(--success); background: rgba(22, 163, 74, 0.12); }
+    .pill-kas { color: var(--primary); background: rgba(99, 102, 241, 0.12); }
 
     .preview-img {
-      width: 100%; max-height: 220px; object-fit: contain;
-      border-radius: 10px; border: 1px solid var(--border);
+      width: 100%; max-height: 210px; object-fit: contain;
+      border-radius: 10px; border: 2px solid var(--border);
       margin-top: 8px; background: var(--surface-2);
     }
 
     nav.bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 30;
-      background: var(--surface); border-top: 1px solid var(--border);
+      background: var(--surface); border-top: 3px solid var(--border);
       display: flex; justify-content: space-around;
       padding: 6px 4px env(safe-area-inset-bottom, 8px);
     }
     .nav-btn {
       flex: 1; background: none; border: none; color: var(--muted);
       display: flex; flex-direction: column; align-items: center; gap: 2px;
-      font-size: 11px; font-weight: 600; padding: 6px 2px; cursor: pointer;
+      font-size: 11px; font-weight: 800; padding: 5px 2px; cursor: pointer;
     }
     .nav-btn.active { color: var(--primary); }
-    .nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2.2; }
 
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 50;
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-box { width: 100%; max-width: 450px; max-height: 90vh; overflow-y: auto; }
     .hidden { display: none !important; }
-    a.link { color: var(--primary); text-decoration: none; font-weight: 600; font-size: 13px; }
+    a.link { color: var(--primary); text-decoration: none; font-weight: 700; font-size: 12px; }
+
+    /* Print Area untuk Rekap LPJ PDF */
+    #printArea { display: none; }
+    @media print {
+      body { background: #fff !important; color: #000 !important; padding: 0; }
+      header.hud, main.container, nav.bottom-nav, .modal-backdrop { display: none !important; }
+      #printArea { display: block !important; font-family: Arial, sans-serif; padding: 16px; color: #000; }
+      #printArea table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+      #printArea th, #printArea td { border: 1px solid #333; padding: 5px 6px; text-align: left; }
+      #printArea th { background: #eee; }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
-  <header class="topbar hidden" id="topbar">
-    <h1>Kas Konser</h1>
-    <span class="badge-role" id="roleBadge">-</span>
+  <!-- HUD Header -->
+  <header class="hud hidden" id="topbar">
+    <div>
+      <div class="brand-title">FinStage</div>
+      <div class="brand-sub">Powered by Baam Entertainment</div>
+    </div>
+    <div class="hud-right">
+      <button class="hud-chip" id="btnSwitchEvent" title="Ganti Event">Event: -</button>
+      <span class="hud-chip lv" id="roleBadge">-</span>
+    </div>
   </header>
 
   <main class="container">
-    <!-- HALAMAN LOGIN -->
-    <section id="viewLogin" class="card" style="margin-top: 24px;">
-      <h2>Masuk Kas Konser</h2>
-      <p class="muted">Gunakan email dan PIN yang terdaftar di Google Sheet.</p>
+    <!-- Banner Antrean Offline -->
+    <div id="offlineBanner" class="alert alert-warn hidden">
+      <div class="row-between" style="align-items: center;">
+        <span id="offlineText">0 transaksi menunggu sinkronisasi.</span>
+        <button class="btn btn-sm" id="btnSyncOffline" style="margin:0;">Sinkronkan</button>
+      </div>
+    </div>
 
+    <!-- HALAMAN 1: LOGIN -->
+    <section id="viewLogin" class="card" style="margin-top: 20px;">
+      <div style="text-align: center; margin-bottom: 12px;">
+        <div class="brand-title" style="font-size: 24px;">FinStage</div>
+        <div class="brand-sub">Powered by Baam Entertainment</div>
+      </div>
       <div id="loginMsg"></div>
-
       <label for="loginEmail">Email</label>
       <input type="email" id="loginEmail" placeholder="nama@konser.id" autocomplete="email" />
-
       <label for="loginPin">PIN</label>
       <input type="password" id="loginPin" inputmode="numeric" placeholder="Masukkan PIN" />
-
       <div id="apiConfigWrap" class="hidden">
         <label for="loginApiUrl">URL Web App Apps Script</label>
         <input type="url" id="loginApiUrl" placeholder="https://script.google.com/macros/s/.../exec" />
       </div>
+      <button class="btn" id="btnLogin">Mulai Sesi</button>
+    </section>
 
-      <button class="btn" id="btnLogin">Masuk</button>
+    <!-- HALAMAN 2: PILIH EVENT -->
+    <section id="viewEvents" class="hidden">
+      <div class="card">
+        <h2>Pilih Event</h2>
+        <p class="muted">Pilih event yang ingin dikelola atau buat event baru (khusus Admin).</p>
+        <div id="eventList">Memuat daftar event...</div>
+      </div>
+
+      <div class="card hidden" id="cardNewEvent">
+        <h3>+ Buat Event Baru (Admin)</h3>
+        <div id="newEventMsg"></div>
+        <label for="evtNama">Nama Event</label>
+        <input type="text" id="evtNama" placeholder="Contoh: Soundfest Surabaya 2027" />
+        <label for="evtTanggal">Tanggal Event</label>
+        <input type="date" id="evtTanggal" />
+        <button class="btn" id="btnBuatEvent">Buat Event</button>
+      </div>
     </section>
 
     <!-- TAB 1: BERANDA -->
     <section id="tabBeranda" class="hidden">
-      <div id="warningSaldo" class="alert alert-danger hidden">
-        Peringatan: Sisa kas kurang dari 20% total modal!
+      <div class="card" style="padding: 12px 15px;">
+        <div class="brand-title" style="font-size: 19px;">FinStage</div>
+        <div class="brand-sub">Powered by Baam Entertainment</div>
+        <div class="muted" id="lblEventAktif" style="margin-top: 4px; font-weight: 700;">-</div>
       </div>
 
+      <div id="warningSaldo" class="alert alert-danger hidden">
+        PERINGATAN: Sisa kas kurang dari 20%! Segera cek anggaran.
+      </div>
+
+      <!-- Ringkasan Utama -->
       <div class="card">
-        <h2 id="judulRingkasan">Ringkasan Kas</h2>
+        <h2 id="judulRingkasan">Status Kas</h2>
         <div class="stat-box" style="margin-bottom: 10px;">
-          <div class="stat-label">Sisa Kas</div>
-          <div class="stat-val" id="valSisa" style="font-size: 22px;">Rp 0</div>
-          <div class="progress-wrap"><div class="progress-bar" id="progBar" style="width: 0%;"></div></div>
+          <div class="stat-label" id="lblSisaUtama">Sisa Kas</div>
+          <div class="stat-val" id="valSisaUtama" style="font-size: 22px;">Rp 0</div>
+          <div class="hp-wrap"><div class="hp-bar" id="progBar" style="width: 100%;"></div></div>
           <div class="muted" id="valPersen">0% terpakai</div>
         </div>
         <div class="grid-2">
           <div class="stat-box">
-            <div class="stat-label">Total Modal</div>
-            <div class="stat-val" id="valModal">Rp 0</div>
+            <div class="stat-label" id="lblDanaMasuk">Total Modal</div>
+            <div class="stat-val" id="valDanaMasuk">Rp 0</div>
           </div>
           <div class="stat-box">
-            <div class="stat-label">Terpakai</div>
+            <div class="stat-label" id="lblTerpakai">Terpakai</div>
             <div class="stat-val" id="valTerpakai">Rp 0</div>
           </div>
         </div>
-        <div class="stat-box" style="margin-top: 10px;">
-          <div class="stat-label">Dana Pribadi Belum Direimburs</div>
-          <div class="stat-val" id="valBelumReimb" style="color: var(--warning);">Rp 0</div>
+        <div class="grid-2" style="margin-top: 10px;">
+          <div class="stat-box" id="boxKasInduk">
+            <div class="stat-label">Tunai di Kas Induk</div>
+            <div class="stat-val" id="valKasInduk">Rp 0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Belum Direimburs</div>
+            <div class="stat-val" id="valBelumReimb" style="color: var(--warning);">Rp 0</div>
+          </div>
         </div>
       </div>
 
-      <div class="card">
-        <h3 id="judulBreakdown">Pengeluaran per Bidang</h3>
-        <div id="listBreakdown" class="muted">Memuat data...</div>
+      <!-- Khusus Admin: Saldo per Kas PIC -->
+      <div class="card hidden" id="cardPicWallets">
+        <h3>Saldo Kas per PIC Bidang</h3>
+        <div id="listPicWallets" class="muted">Belum ada alokasi ke PIC.</div>
       </div>
 
-      <!-- Khusus Admin: Input Modal -->
+      <!-- Breakdown Pengeluaran -->
+      <div class="card">
+        <h3 id="judulBreakdown">Pengeluaran per Bidang</h3>
+        <div id="listBreakdown" class="muted">Belum ada pengeluaran.</div>
+      </div>
+
+      <!-- Khusus PIC: Riwayat Dana Diterima dari Kas Induk -->
+      <div class="card hidden" id="cardPicAlokasi">
+        <h3>Dana Diterima dari Kas Induk</h3>
+        <div id="listPicAlokasi" class="muted">Belum ada dana masuk.</div>
+      </div>
+
+      <!-- Khusus Admin: Input Modal & Transfer ke Kas PIC -->
       <div class="card hidden" id="cardAdminModal">
-        <h3>Tambah Modal Masuk (Admin)</h3>
+        <h3>Kelola Kas Induk (Admin)</h3>
         <div id="modalMsg"></div>
+        <label for="adminKasMode">Pilih Aksi Kas Induk</label>
+        <select id="adminKasMode">
+          <option value="modal">Tambah Modal Masuk ke Kas Induk</option>
+          <option value="alokasi">Kirim / Alokasi Dana ke Kas PIC</option>
+        </select>
         <div class="grid-2">
           <div>
             <label for="modTanggal">Tanggal</label>
@@ -248,17 +339,18 @@
             <input type="number" id="modNominal" inputmode="numeric" placeholder="5000000" />
           </div>
         </div>
-        <label for="modSumber">Sumber Modal</label>
-        <input type="text" id="modSumber" placeholder="Contoh: Kas Panitia / Donatur A" />
-        <label for="modBidang">Bidang (kosongkan untuk Kas Besar)</label>
-        <input type="text" id="modBidang" placeholder="Kosong = Kas Besar" list="listBidangDatalist" />
+        <div id="wrapModalSumber">
+          <label for="modSumber">Sumber Modal</label>
+          <input type="text" id="modSumber" placeholder="Contoh: Kas Baam / Sponsor" />
+        </div>
+        <div id="wrapAlokasiBidang" class="hidden">
+          <label for="alokBidang">Bidang Tujuan Kas PIC</label>
+          <input type="text" id="alokBidang" placeholder="Contoh: Produksi" list="listBidangDatalist" />
+        </div>
         <datalist id="listBidangDatalist"></datalist>
-        <label for="modCatatan">Catatan</label>
+        <label for="modCatatan">Catatan (opsional)</label>
         <input type="text" id="modCatatan" placeholder="Opsional" />
-        <button class="btn" id="btnTambahModal">Simpan Modal</button>
-
-        <h3 style="margin-top: 16px;">Riwayat Modal Terbaru</h3>
-        <div id="listModal" class="muted">Belum ada modal.</div>
+        <button class="btn" id="btnSimpanKasInduk">Simpan ke Kas Induk</button>
       </div>
     </section>
 
@@ -268,7 +360,7 @@
         <h2>Catat Pengeluaran</h2>
         <div id="addMsg"></div>
 
-        <label for="inpFoto">Foto Nota (Otomatis diperkecil &amp; dibaca OCR)</label>
+        <label for="inpFoto">Foto Nota (Kompres + OCR Otomatis)</label>
         <input type="file" id="inpFoto" accept="image/*" capture="environment" />
         <img id="previewNota" class="preview-img hidden" alt="Pratinjau nota" />
         <div id="ocrStatus" class="alert alert-info hidden" style="margin-top: 8px;"></div>
@@ -287,35 +379,54 @@
         <label for="inpBidang">Bidang</label>
         <select id="inpBidang"></select>
 
-        <label for="inpPos">Pos Biaya</label>
-        <select id="inpPos"></select>
+        <label for="inpKategori">Kategori</label>
+        <select id="inpKategori"></select>
 
-        <label for="inpVendor">Nama Toko / Vendor</label>
-        <input type="text" id="inpVendor" placeholder="Contoh: Toko Jaya Sound" />
+        <label for="inpVendor">Nama Toko / Vendor (opsional)</label>
+        <input type="text" id="inpVendor" placeholder="Opsional — misal: Toko Jaya Sound" />
 
         <label for="inpKeterangan">Keterangan</label>
         <input type="text" id="inpKeterangan" placeholder="Contoh: Sewa kabel XLR 10 buah" />
 
         <label for="inpDibayar">Dibayar Dari</label>
         <select id="inpDibayar">
-          <option value="Kas">Kas Event</option>
-          <option value="Pribadi">Dana Pribadi (Perlu Reimburs)</option>
+          <option value="Kas PIC">Kas PIC</option>
+          <option value="Pribadi">Dana Pribadi (Reimburs ke Kas Induk)</option>
         </select>
 
         <button class="btn" id="btnSimpanExp">Simpan Pengeluaran</button>
       </div>
     </section>
 
-    <!-- TAB 3: RIWAYAT -->
+    <!-- TAB 3: RIWAYAT & LPJ -->
     <section id="tabRiwayat" class="hidden">
       <div class="card">
-        <h2>Riwayat Transaksi</h2>
-        <input type="search" id="searchExp" placeholder="Cari toko, keterangan, pos, nominal..." />
-        <select id="filterReimb" style="margin-top: 8px;">
-          <option value="semua">Semua Transaksi</option>
-          <option value="belum">Belum Direimburs</option>
-          <option value="sudah">Sudah Direimburs</option>
-        </select>
+        <div class="row-between" style="align-items: center; margin-bottom: 8px;">
+          <h2 style="margin: 0;">Riwayat &amp; LPJ</h2>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn-secondary btn-sm" id="btnExportCsv">CSV</button>
+            <button class="btn btn-sm" id="btnPrintLpj">Cetak LPJ (PDF)</button>
+          </div>
+        </div>
+        <input type="search" id="searchExp" placeholder="Cari toko, keterangan, kategori, nominal..." />
+        <div class="grid-2" style="margin-top: 8px;">
+          <div>
+            <label for="tglDari" style="margin-top:0;">Dari Tanggal</label>
+            <input type="date" id="tglDari" />
+          </div>
+          <div>
+            <label for="tglSampai" style="margin-top:0;">Sampai Tanggal</label>
+            <input type="date" id="tglSampai" />
+          </div>
+        </div>
+        <div class="grid-2" style="margin-top: 8px;">
+          <select id="filterBidang" class="hidden"></select>
+          <select id="filterReimb">
+            <option value="semua">Semua Status</option>
+            <option value="belum">Belum Reimburs</option>
+            <option value="sudah">Sudah Reimburs</option>
+          </select>
+        </div>
       </div>
       <div class="card" id="listRiwayat">Memuat riwayat...</div>
     </section>
@@ -323,9 +434,9 @@
     <!-- TAB 4: REIMBURS -->
     <section id="tabReimburs" class="hidden">
       <div class="card">
-        <h2>Daftar Reimburs (Dana Pribadi)</h2>
+        <h2>Quest Reimburs (Dana Pribadi → Kas Induk)</h2>
         <div class="stat-box" style="margin-bottom: 10px;">
-          <div class="stat-label">Total Masih Harus Diganti</div>
+          <div class="stat-label">Total Masih Harus Diganti Kas Induk</div>
           <div class="stat-val" id="reimbTotalBelum" style="color: var(--warning);">Rp 0</div>
         </div>
         <div id="reimbMsg"></div>
@@ -333,14 +444,13 @@
       </div>
     </section>
 
-    <!-- TAB 5: AKUN -->
+    <!-- TAB 5: AKUN, KATEGORI & PENGGUNA -->
     <section id="tabAkun" class="hidden">
       <div class="card">
         <h2>Profil Akun</h2>
         <p style="margin: 4px 0;"><strong id="accNama">-</strong></p>
         <p class="muted" id="accEmail" style="margin: 0 0 6px;">-</p>
         <p class="muted" id="accInfo" style="margin: 0;">-</p>
-
         <button class="btn btn-secondary" id="btnToggleTheme">Ganti Mode Terang / Gelap</button>
       </div>
 
@@ -352,9 +462,9 @@
         <button class="btn" id="btnGantiPin">Simpan PIN Baru</button>
       </div>
 
-      <!-- Khusus Admin: Kelola Kategori -->
-      <div class="card hidden" id="cardAdminKat">
-        <h3>Kelola Kategori (Admin)</h3>
+      <!-- Kelola Kategori (Bisa Admin & PIC) -->
+      <div class="card">
+        <h3>Kelola Kategori Event Ini</h3>
         <div id="katMsg"></div>
         <div class="grid-2">
           <div>
@@ -362,17 +472,102 @@
             <input type="text" id="katBidang" placeholder="Produksi" />
           </div>
           <div>
-            <label for="katPos">Pos Biaya</label>
-            <input type="text" id="katPos" placeholder="Genset" />
+            <label for="katNama">Nama Kategori</label>
+            <input type="text" id="katNama" placeholder="Genset" />
           </div>
         </div>
         <button class="btn" id="btnTambahKat">Tambah Kategori</button>
         <div id="listKategori" style="margin-top: 12px;"></div>
       </div>
 
+      <!-- Khusus Admin: Kelola Pengguna -->
+      <div class="card hidden" id="cardAdminUsers">
+        <h3>Kelola Pengguna / PIC (Admin)</h3>
+        <div id="userMsg"></div>
+        <label for="usrEmail">Email</label>
+        <input type="email" id="usrEmail" placeholder="pic.baru@konser.id" />
+        <div class="grid-2">
+          <div>
+            <label for="usrNama">Nama</label>
+            <input type="text" id="usrNama" placeholder="PIC Artis" />
+          </div>
+          <div>
+            <label for="usrPin">PIN (4–8 digit)</label>
+            <input type="password" id="usrPin" inputmode="numeric" placeholder="Isi untuk baru/reset" />
+          </div>
+        </div>
+        <div class="grid-2">
+          <div>
+            <label for="usrPeran">Peran</label>
+            <select id="usrPeran">
+              <option value="pic">PIC Bidang</option>
+              <option value="admin">Admin Kas Induk</option>
+            </select>
+          </div>
+          <div>
+            <label for="usrBidang">Bidang</label>
+            <input type="text" id="usrBidang" placeholder="Artis" />
+          </div>
+        </div>
+        <button class="btn" id="btnSimpanUser">Simpan / Update Pengguna</button>
+        <div id="listUsers" style="margin-top: 12px;"></div>
+      </div>
+
       <button class="btn btn-secondary" id="btnLogout" style="color: var(--danger);">Keluar dari Akun</button>
     </section>
   </main>
+
+  <!-- MODAL EDIT TRANSAKSI -->
+  <div id="modalEdit" class="modal-backdrop hidden">
+    <div class="card modal-box">
+      <h3>Edit Pengeluaran</h3>
+      <div id="editMsg"></div>
+      <input type="hidden" id="editId" />
+      <div class="grid-2">
+        <div>
+          <label for="editTanggal">Tanggal</label>
+          <input type="date" id="editTanggal" />
+        </div>
+        <div>
+          <label for="editNominal">Nominal (Rp)</label>
+          <input type="number" id="editNominal" inputmode="numeric" />
+        </div>
+      </div>
+      <label for="editBidang">Bidang</label>
+      <select id="editBidang"></select>
+      <label for="editKategori">Kategori</label>
+      <select id="editKategori"></select>
+      <label for="editVendor">Nama Toko / Vendor (opsional)</label>
+      <input type="text" id="editVendor" />
+      <label for="editKeterangan">Keterangan</label>
+      <input type="text" id="editKeterangan" />
+      <div class="grid-2" style="margin-top: 8px;">
+        <button class="btn btn-secondary" id="btnBatalEdit">Batal</button>
+        <button class="btn" id="btnSimpanEdit">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PROSES REIMBURS + BUKTI TRANSFER -->
+  <div id="modalReimb" class="modal-backdrop hidden">
+    <div class="card modal-box">
+      <h3>Konfirmasi Reimburs (Kas Induk)</h3>
+      <div id="reimbModalMsg"></div>
+      <input type="hidden" id="reimbId" />
+      <label for="reimbTgl">Tanggal Transfer Penggantian</label>
+      <input type="date" id="reimbTgl" />
+      <label for="reimbBukti">Foto Bukti Transfer (opsional)</label>
+      <input type="file" id="reimbBukti" accept="image/*" />
+      <img id="reimbPreview" class="preview-img hidden" alt="Bukti transfer" />
+      <div class="grid-2" style="margin-top: 8px;">
+        <button class="btn btn-secondary" id="btnBatalReimb">Batal</button>
+        <button class="btn btn-success" id="btnKonfirmReimb">Tandai Sudah Diganti</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AREA CETAK LPJ (PDF) -->
+  <div id="printArea"></div>
 
   <!-- Navigasi Bawah -->
   <nav class="bottom-nav hidden" id="bottomNav">
@@ -399,54 +594,63 @@
   </nav>
 
   <script>
-    // Tempel URL Web App Google Apps Script Anda di bawah ini setelah Deploy:
     const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbyMiPNkJoqPeSEoU7M2KYs65BupkZGDtE5QKxXpB2mefIADpPA54gmLlGkymPpkIRyD/exec';
+
     const state = {
       apiUrl: localStorage.getItem('konser_api_url') || DEFAULT_API_URL,
       email: localStorage.getItem('konser_email') || '',
-      pin: localStorage.getItem('konser_pin') || '',
+      token: localStorage.getItem('konser_token') || '',
+      eventId: localStorage.getItem('finstage_event_id') || '',
+      eventName: localStorage.getItem('finstage_event_name') || '',
       user: null,
+      events: [],
+      dashboard: null,
       categories: [],
       expenses: [],
-      notaBase64: ''
+      notaBase64: '',
+      buktiReimbBase64: ''
     };
 
     const $ = (id) => document.getElementById(id);
     const rp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
     const todayStr = () => new Date().toISOString().slice(0, 10);
 
-    // Terapkan tema tersimpan
     const savedTheme = localStorage.getItem('konser_theme');
     if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
 
-    // Daftarkan Service Worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
 
-    // Panggil backend tanpa header Content-Type khusus agar tidak kena preflight CORS
     async function apiCall(action, payload = {}) {
       const url = state.apiUrl;
-      if (!url || url.includes('PASTE_URL_WEB_APP')) {
-        throw new Error('URL Web App Apps Script belum diisi.');
-      }
+      if (!url || url.includes('PASTE_URL_WEB_APP')) throw new Error('URL Web App Apps Script belum diisi.');
       const res = await fetch(url, {
         method: 'POST',
         body: JSON.stringify({
           action,
           email: state.email,
-          pin: state.pin,
+          token: state.token,
+          event_id: state.eventId,
           ...payload
         })
       });
       const data = await res.json();
-      if (!data.ok) throw new Error(data.error || 'Permintaan gagal.');
+      if (!data.ok) {
+        if (data.code === 'SESSION_EXPIRED') {
+          localStorage.removeItem('konser_token');
+          state.token = '';
+          location.reload();
+        }
+        const err = new Error(data.error || 'Permintaan gagal.');
+        err.isServerRejection = true;
+        throw err;
+      }
       return data;
     }
 
     function showMsg(elId, text, type = 'info') {
-      const el = $(elId);
-      el.innerHTML = text ? `<div class="alert alert-${type}">${escapeHtml(text)}</div>` : '';
+      $(elId).innerHTML = text ? `<div class="alert alert-${type}">${escapeHtml(text)}</div>` : '';
     }
 
     function escapeHtml(str) {
@@ -455,68 +659,234 @@
       }[m]));
     }
 
-    /* ==================== LOGIN & SESI ==================== */
-    function initLoginView() {
+    /* ==================== INDEXEDDB ANTREAN OFFLINE ==================== */
+    function openQueueDb() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open('finstage_offline_db', 1);
+        req.onupgradeneeded = () => req.result.createObjectStore('queue', { keyPath: 'qid', autoIncrement: true });
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function enqueueOffline(item) {
+      const db = await openQueueDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('queue', 'readwrite');
+        tx.objectStore('queue').add(item);
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function getOfflineQueue() {
+      const db = await openQueueDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('queue', 'readonly');
+        const req = tx.objectStore('queue').getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function removeOfflineItem(qid) {
+      const db = await openQueueDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('queue', 'readwrite');
+        tx.objectStore('queue').delete(qid);
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function updateOfflineBanner() {
+      try {
+        const items = await getOfflineQueue();
+        if (items.length > 0) {
+          $('offlineText').textContent = `${items.length} pengeluaran tersimpan di antrean offline.`;
+          $('offlineBanner').classList.remove('hidden');
+        } else {
+          $('offlineBanner').classList.add('hidden');
+        }
+      } catch (e) {}
+    }
+
+    async function syncOfflineQueue() {
+      if (!navigator.onLine || !state.token) return;
+      const items = await getOfflineQueue();
+      if (!items.length) return;
+      $('btnSyncOffline').disabled = true;
+      $('btnSyncOffline').textContent = 'Menyinkronkan...';
+      let synced = 0;
+      for (const item of items) {
+        try {
+          await apiCall('addExpense', item.payload);
+          await removeOfflineItem(item.qid);
+          synced++;
+        } catch (err) {
+          if (err.isServerRejection) await removeOfflineItem(item.qid);
+          else break;
+        }
+      }
+      $('btnSyncOffline').disabled = false;
+      $('btnSyncOffline').textContent = 'Sinkronkan';
+      await updateOfflineBanner();
+      if (synced > 0 && state.eventId) refreshBootstrap();
+    }
+
+    $('btnSyncOffline').addEventListener('click', syncOfflineQueue);
+    window.addEventListener('online', syncOfflineQueue);
+
+    /* ==================== LOGIN & PILIH EVENT ==================== */
+    async function initLoginView() {
       if (DEFAULT_API_URL.includes('PASTE_URL_WEB_APP')) {
         $('apiConfigWrap').classList.remove('hidden');
         $('loginApiUrl').value = state.apiUrl.includes('PASTE_URL_WEB_APP') ? '' : state.apiUrl;
       }
-      if (state.email && state.pin && !state.apiUrl.includes('PASTE_URL_WEB_APP')) {
-        doLogin(state.email, state.pin, state.apiUrl, true);
+      if (state.email && state.token && !state.apiUrl.includes('PASTE_URL_WEB_APP')) {
+        try {
+          const evRes = await apiCall('getEvents');
+          state.events = evRes.events || [];
+          if (state.eventId) {
+            const boot = await apiCall('getBootstrap');
+            applyBootstrap(boot);
+            enterEventApp(false);
+          } else {
+            const bootCheck = await apiCall('getEvents');
+            state.events = bootCheck.events || [];
+            showEventSelector();
+          }
+        } catch (err) {
+          localStorage.removeItem('konser_token');
+        }
       }
     }
 
-    $('btnLogin').addEventListener('click', () => {
+    $('btnLogin').addEventListener('click', async () => {
       const email = $('loginEmail').value.trim();
       const pin = $('loginPin').value.trim();
-      const apiInput = $('loginApiUrl').value.trim();
-      const url = apiInput || state.apiUrl;
-      doLogin(email, pin, url, false);
+      const url = $('loginApiUrl').value.trim() || state.apiUrl;
+      try {
+        $('btnLogin').disabled = true;
+        showMsg('loginMsg', 'Memeriksa akun...', 'info');
+        state.email = email;
+        state.apiUrl = url;
+        const res = await apiCall('login', { pin });
+        state.token = res.token;
+        state.user = res.user;
+        state.events = res.events || [];
+        localStorage.setItem('konser_email', email);
+        localStorage.setItem('konser_token', res.token);
+        localStorage.setItem('konser_api_url', url);
+        showEventSelector();
+      } catch (err) {
+        showMsg('loginMsg', err.message, 'danger');
+      } finally {
+        $('btnLogin').disabled = false;
+      }
     });
 
-    async function doLogin(email, pin, url, silent) {
-      try {
-        if (!silent) showMsg('loginMsg', 'Memeriksa akun...', 'info');
-        state.email = email;
-        state.pin = pin;
-        state.apiUrl = url;
-        const res = await apiCall('login');
-        state.user = res.user;
-        localStorage.setItem('konser_email', email);
-        localStorage.setItem('konser_pin', pin);
-        localStorage.setItem('konser_api_url', url);
-        enterApp();
-      } catch (err) {
-        if (!silent) showMsg('loginMsg', err.message, 'danger');
-        else localStorage.removeItem('konser_pin');
+    function showEventSelector() {
+      $('viewLogin').classList.add('hidden');
+      ['tabBeranda', 'tabTambah', 'tabRiwayat', 'tabReimburs', 'tabAkun', 'bottomNav'].forEach(id => $(id).classList.add('hidden'));
+      $('topbar').classList.remove('hidden');
+      $('viewEvents').classList.remove('hidden');
+
+      if (state.user) {
+        const isAdmin = state.user.peran === 'admin';
+        $('roleBadge').textContent = isAdmin ? 'ADMIN • LV MAX' : `PIC • ${state.user.bidang}`;
+        $('cardNewEvent').classList.toggle('hidden', !isAdmin);
       }
+      $('evtTanggal').value = todayStr();
+
+      $('eventList').innerHTML = state.events.length
+        ? state.events.map(ev => `
+          <div class="list-item row-between" style="align-items:center;">
+            <div>
+              <strong>${escapeHtml(ev.nama_event)}</strong>
+              <div class="muted">${escapeHtml(ev.tanggal_event)} • ${escapeHtml(ev.status)}</div>
+            </div>
+            <button class="btn btn-sm" onclick="selectEvent('${escapeHtml(ev.event_id)}', '${escapeHtml(ev.nama_event)}')">Buka</button>
+          </div>`).join('')
+        : '<span class="muted">Belum ada event tersedia.</span>';
     }
 
-    function enterApp() {
+    window.selectEvent = (eventId, eventName) => {
+      state.eventId = eventId;
+      state.eventName = eventName;
+      localStorage.setItem('finstage_event_id', eventId);
+      localStorage.setItem('finstage_event_name', eventName);
+      enterEventApp(true);
+    };
+
+    $('btnSwitchEvent').addEventListener('click', showEventSelector);
+
+    $('btnBuatEvent').addEventListener('click', async () => {
+      try {
+        $('btnBuatEvent').disabled = true;
+        const res = await apiCall('createEvent', {
+          nama_event: $('evtNama').value.trim(),
+          tanggal_event: $('evtTanggal').value
+        });
+        $('evtNama').value = '';
+        state.events.unshift(res.event);
+        showEventSelector();
+        showMsg('newEventMsg', 'Event berhasil dibuat!', 'success');
+      } catch (err) {
+        showMsg('newEventMsg', err.message, 'danger');
+      } finally {
+        $('btnBuatEvent').disabled = false;
+      }
+    });
+
+    function enterEventApp(shouldFetch) {
       $('viewLogin').classList.add('hidden');
+      $('viewEvents').classList.add('hidden');
       $('topbar').classList.remove('hidden');
       $('bottomNav').classList.remove('hidden');
+
+      $('btnSwitchEvent').textContent = state.eventName ? `Event: ${state.eventName.slice(0, 14)}` : 'Pilih Event';
+      $('lblEventAktif').textContent = `Event Aktif: ${state.eventName || state.eventId}`;
+
       const isAdmin = state.user.peran === 'admin';
-      $('roleBadge').textContent = isAdmin ? 'Admin / Bendahara' : `PIC: ${state.user.bidang}`;
+      $('roleBadge').textContent = isAdmin ? 'ADMIN • LV MAX' : `PIC • ${state.user.bidang}`;
       $('accNama').textContent = state.user.nama;
       $('accEmail').textContent = state.user.email;
       $('accInfo').textContent = `Peran: ${state.user.peran.toUpperCase()} | Bidang: ${state.user.bidang}`;
 
       $('cardAdminModal').classList.toggle('hidden', !isAdmin);
-      $('cardAdminKat').classList.toggle('hidden', !isAdmin);
+      $('cardPicWallets').classList.toggle('hidden', !isAdmin);
+      $('cardPicAlokasi').classList.toggle('hidden', isAdmin);
+      $('boxKasInduk').classList.toggle('hidden', !isAdmin);
+      $('cardAdminUsers').classList.toggle('hidden', !isAdmin);
+      $('filterBidang').classList.toggle('hidden', !isAdmin);
+
+      // Sumber dana form tambah: Admin bisa pilih Kas Induk, Kas PIC, atau Pribadi
+      $('inpDibayar').innerHTML = isAdmin
+        ? `<option value="Kas Induk">Kas Induk</option><option value="Kas PIC">Kas PIC</option><option value="Pribadi">Dana Pribadi (Reimburs ke Kas Induk)</option>`
+        : `<option value="Kas PIC">Kas PIC</option><option value="Pribadi">Dana Pribadi (Reimburs ke Kas Induk)</option>`;
+
+      // Bidang di Kelola Kategori: PIC terkunci di bidangnya sendiri
+      $('katBidang').value = isAdmin ? '' : state.user.bidang;
+      $('katBidang').disabled = !isAdmin;
+
       $('inpTanggal').value = todayStr();
       $('modTanggal').value = todayStr();
 
       switchTab('tabBeranda');
-      loadAllData();
+      updateOfflineBanner();
+      if (shouldFetch) refreshBootstrap();
+      if (isAdmin) loadUsersList();
     }
 
-    $('btnLogout').addEventListener('click', () => {
-      localStorage.removeItem('konser_pin');
+    $('btnLogout').addEventListener('click', async () => {
+      try { await apiCall('logout'); } catch (e) {}
+      localStorage.removeItem('konser_token');
+      localStorage.removeItem('finstage_event_id');
       location.reload();
     });
 
-    /* ==================== NAVIGASI ==================== */
+    /* ==================== NAVIGASI & BOOTSTRAP ==================== */
     document.querySelectorAll('.nav-btn').forEach((btn) => {
       btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
@@ -530,134 +900,175 @@
       });
     }
 
-    async function loadAllData() {
-      await Promise.all([loadDashboard(), loadCategories(), loadExpenses()]);
-    }
-
-    /* ==================== BERANDA & MODAL ==================== */
-    async function loadDashboard() {
+    async function refreshBootstrap() {
       try {
-        const { dashboard: d } = await apiCall('getDashboard');
-        $('judulRingkasan').textContent = d.isAdmin ? 'Ringkasan Kas Besar' : `Ringkasan Bidang ${d.bidang}`;
-        $('valSisa').textContent = rp(d.sisa);
-        $('valModal').textContent = rp(d.totalModal);
-        $('valTerpakai').textContent = rp(d.terpakai);
-        $('valBelumReimb').textContent = rp(d.belumReimburs);
-        $('valPersen').textContent = `${d.persenTerpakai}% terpakai`;
-
-        const pb = $('progBar');
-        pb.style.width = `${d.persenTerpakai}%`;
-        pb.classList.toggle('warn', d.peringatanRendah);
-        $('warningSaldo').classList.toggle('hidden', !d.peringatanRendah);
-
-        $('judulBreakdown').textContent = d.isAdmin ? 'Pengeluaran per Bidang' : 'Pengeluaran per Pos';
-        $('listBreakdown').innerHTML = d.breakdown.length
-          ? d.breakdown.map((b) => `
-            <div class="list-item">
-              <div class="row-between">
-                <strong>${escapeHtml(b.label)}</strong>
-                <strong>${rp(b.terpakai)}</strong>
-              </div>
-              <div class="muted">Belum reimburs: ${rp(b.belumReimburs)}</div>
-            </div>`).join('')
-          : '<span class="muted">Belum ada pengeluaran tercatat.</span>';
-
-        if (d.isAdmin) {
-          $('listModal').innerHTML = d.daftarModal.length
-            ? d.daftarModal.map((m) => `
-              <div class="list-item">
-                <div class="row-between">
-                  <strong>${escapeHtml(m.sumber)}</strong>
-                  <strong>${rp(m.nominal)}</strong>
-                </div>
-                <div class="muted">${escapeHtml(String(m.tanggal).slice(0, 10))} • ${m.bidang ? escapeHtml(m.bidang) : 'Kas Besar'}</div>
-              </div>`).join('')
-            : '<span class="muted">Belum ada modal.</span>';
-        }
+        const boot = await apiCall('getBootstrap');
+        applyBootstrap(boot);
       } catch (err) {
         $('listBreakdown').innerHTML = `<span style="color:var(--danger)">${escapeHtml(err.message)}</span>`;
       }
     }
 
-    $('btnTambahModal').addEventListener('click', async () => {
+    function applyBootstrap(boot) {
+      if (boot.user) state.user = boot.user;
+      state.dashboard = boot.dashboard;
+      state.categories = boot.categories || [];
+      state.expenses = boot.expenses || [];
+      renderDashboard(boot.dashboard);
+      populateBidangDropdown();
+      renderCategoriesList();
+      renderRiwayat();
+      renderReimburs();
+    }
+
+    /* ==================== BERANDA KAS INDUK VS KAS PIC ==================== */
+    function renderDashboard(d) {
+      const pb = $('progBar');
+      pb.style.width = `${100 - d.persenTerpakai}%`; // HP bar menunjukkan sisa energi/kas
+      pb.classList.remove('mid', 'low');
+      if (d.peringatanRendah) pb.classList.add('low');
+      else if (d.persenTerpakai >= 50) pb.classList.add('mid');
+      $('warningSaldo').classList.toggle('hidden', !d.peringatanRendah);
+      $('valPersen').textContent = `${d.persenTerpakai}% terpakai (Sisa ${100 - d.persenTerpakai}%)`;
+
+      if (d.isAdmin) {
+        $('judulRingkasan').textContent = 'Konsolidasi Kas Induk & Event';
+        $('lblSisaUtama').textContent = 'Sisa Dana Event Keseluruhan';
+        $('valSisaUtama').textContent = rp(d.sisaEvent);
+        $('lblDanaMasuk').textContent = 'Total Modal Event';
+        $('valDanaMasuk').textContent = rp(d.totalModal);
+        $('lblTerpakai').textContent = 'Total Belanja Riil';
+        $('valTerpakai').textContent = rp(d.totalBelanjaRiil);
+        $('valKasInduk').textContent = rp(d.sisaKasInduk);
+        $('valBelumReimb').textContent = rp(d.belumReimburs);
+
+        $('listPicWallets').innerHTML = d.picWallets.length
+          ? d.picWallets.map(w => `
+            <div class="list-item">
+              <div class="row-between">
+                <strong>${escapeHtml(w.bidang)}</strong>
+                <strong>Sisa: ${rp(w.sisa)}</strong>
+              </div>
+              <div class="muted">Diterima: ${rp(w.diterima)} • Terpakai: ${rp(w.terpakai)} • Reimburs Belum: ${rp(w.belumReimburs)}</div>
+            </div>`).join('')
+          : '<span class="muted">Belum ada dana dialokasikan ke Kas PIC.</span>';
+      } else {
+        $('judulRingkasan').textContent = `Dompet Kas PIC (${d.bidang})`;
+        $('lblSisaUtama').textContent = 'Sisa Kas PIC Anda';
+        $('valSisaUtama').textContent = rp(d.sisaPic);
+        $('lblDanaMasuk').textContent = 'Dana Diterima dari Induk';
+        $('valDanaMasuk').textContent = rp(d.danaDiterima);
+        $('lblTerpakai').textContent = 'Terpakai Kas PIC';
+        $('valTerpakai').textContent = rp(d.terpakaiPic);
+        $('valBelumReimb').textContent = rp(d.belumReimburs);
+
+        $('listPicAlokasi').innerHTML = d.daftarAlokasi.length
+          ? d.daftarAlokasi.map(a => `
+            <div class="list-item row-between">
+              <div><strong>${escapeHtml(String(a.tanggal).slice(0,10))}</strong><div class="muted">${escapeHtml(a.catatan || 'Transfer Kas Induk')}</div></div>
+              <strong>+${rp(a.nominal)}</strong>
+            </div>`).join('')
+          : '<span class="muted">Belum ada transfer dana dari Kas Induk.</span>';
+      }
+
+      $('judulBreakdown').textContent = d.isAdmin ? 'Pengeluaran per Bidang' : 'Pengeluaran per Kategori';
+      $('listBreakdown').innerHTML = d.breakdown.length
+        ? d.breakdown.map(b => `
+          <div class="list-item">
+            <div class="row-between"><strong>${escapeHtml(b.label)}</strong><strong>${rp(b.terpakai)}</strong></div>
+            <div class="muted">Belum reimburs: ${rp(b.belumReimburs)}</div>
+          </div>`).join('')
+        : '<span class="muted">Belum ada pengeluaran tercatat.</span>';
+    }
+
+    $('adminKasMode').addEventListener('change', (e) => {
+      const isModal = e.target.value === 'modal';
+      $('wrapModalSumber').classList.toggle('hidden', !isModal);
+      $('wrapAlokasiBidang').classList.toggle('hidden', isModal);
+    });
+
+    $('btnSimpanKasInduk').addEventListener('click', async () => {
+      const mode = $('adminKasMode').value;
       try {
-        $('btnTambahModal').disabled = true;
-        await apiCall('addModal', {
-          tanggal: $('modTanggal').value,
-          nominal: $('modNominal').value,
-          sumber: $('modSumber').value,
-          bidang: $('modBidang').value,
-          catatan: $('modCatatan').value
-        });
-        showMsg('modalMsg', 'Modal berhasil disimpan.', 'success');
+        $('btnSimpanKasInduk').disabled = true;
+        if (mode === 'modal') {
+          await apiCall('addModal', {
+            tanggal: $('modTanggal').value,
+            nominal: $('modNominal').value,
+            sumber: $('modSumber').value.trim(),
+            catatan: $('modCatatan').value.trim()
+          });
+          showMsg('modalMsg', 'Modal masuk berhasil disimpan ke Kas Induk!', 'success');
+        } else {
+          await apiCall('addAlokasi', {
+            tanggal: $('modTanggal').value,
+            nominal: $('modNominal').value,
+            bidang: $('alokBidang').value.trim(),
+            catatan: $('modCatatan').value.trim()
+          });
+          showMsg('modalMsg', 'Dana berhasil dialokasikan ke Kas PIC!', 'success');
+        }
         $('modNominal').value = '';
         $('modSumber').value = '';
         $('modCatatan').value = '';
-        loadDashboard();
+        refreshBootstrap();
       } catch (err) {
         showMsg('modalMsg', err.message, 'danger');
       } finally {
-        $('btnTambahModal').disabled = false;
+        $('btnSimpanKasInduk').disabled = false;
       }
     });
 
-    /* ==================== KATEGORI & FORM TAMBAH ==================== */
-    async function loadCategories() {
-      try {
-        const { categories } = await apiCall('getCategories');
-        state.categories = categories;
-        populateBidangDropdown();
-        renderAdminCategories();
-      } catch (err) {}
-    }
-
+    /* ==================== KATEGORI (ADMIN & PIC) ==================== */
     function populateBidangDropdown() {
-      const selBidang = $('inpBidang');
       const isAdmin = state.user.peran === 'admin';
-      const aktifCats = state.categories.filter((c) => c.aktif === 'ya');
-      const bidangList = isAdmin
-        ? [...new Set(aktifCats.map((c) => c.bidang))]
-        : [state.user.bidang];
+      const aktifCats = state.categories.filter(c => c.aktif === 'ya');
+      const bidangList = isAdmin ? [...new Set(aktifCats.map(c => c.bidang))] : [state.user.bidang];
 
-      selBidang.innerHTML = bidangList.map((b) => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('');
-      selBidang.disabled = !isAdmin;
+      $('inpBidang').innerHTML = bidangList.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('');
+      $('inpBidang').disabled = !isAdmin;
 
-      $('listBidangDatalist').innerHTML = [...new Set(state.categories.map((c) => c.bidang))]
-        .map((b) => `<option value="${escapeHtml(b)}">`).join('');
+      $('listBidangDatalist').innerHTML = [...new Set(state.categories.map(c => c.bidang))]
+        .map(b => `<option value="${escapeHtml(b)}">`).join('');
 
-      populatePosDropdown();
+      if (isAdmin) {
+        const allBidang = [...new Set(state.expenses.map(e => e.bidang).concat(bidangList))];
+        $('filterBidang').innerHTML = `<option value="semua">Semua Bidang</option>` +
+          allBidang.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('');
+      }
+
+      populateKategoriDropdown('inpBidang', 'inpKategori');
     }
 
-    function populatePosDropdown() {
-      const bidang = $('inpBidang').value;
-      const posList = state.categories
-        .filter((c) => c.bidang === bidang && c.aktif === 'ya')
-        .map((c) => c.pos);
-      $('inpPos').innerHTML = posList.length
-        ? posList.map((p) => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('')
-        : '<option value="">-- Tidak ada pos aktif --</option>';
+    function populateKategoriDropdown(bidangElId, katElId) {
+      const bidang = $(bidangElId).value;
+      const list = state.categories.filter(c => c.bidang === bidang && c.aktif === 'ya').map(c => c.kategori);
+      $(katElId).innerHTML = list.length
+        ? list.map(k => `<option value="${escapeHtml(k)}">${escapeHtml(k)}</option>`).join('')
+        : '<option value="">-- Tambah kategori di menu Akun --</option>';
     }
 
-    $('inpBidang').addEventListener('change', populatePosDropdown);
+    $('inpBidang').addEventListener('change', () => populateKategoriDropdown('inpBidang', 'inpKategori'));
+    $('editBidang').addEventListener('change', () => populateKategoriDropdown('editBidang', 'editKategori'));
 
-    function renderAdminCategories() {
-      if (state.user.peran !== 'admin') return;
-      $('listKategori').innerHTML = state.categories.map((c) => `
-        <div class="list-item row-between">
-          <div>
-            <strong>${escapeHtml(c.bidang)}</strong> — ${escapeHtml(c.pos)}
-            <div><span class="pill ${c.aktif === 'ya' ? 'pill-ok' : 'pill-warn'}">${c.aktif === 'ya' ? 'Aktif' : 'Nonaktif'}</span></div>
-          </div>
-          <button class="btn btn-secondary btn-sm" onclick="toggleKat(${c.rowIndex}, '${c.aktif === 'ya' ? 'tidak' : 'ya'}')">
-            ${c.aktif === 'ya' ? 'Nonaktifkan' : 'Aktifkan'}
-          </button>
-        </div>`).join('');
+    function renderCategoriesList() {
+      const isAdmin = state.user.peran === 'admin';
+      $('listKategori').innerHTML = state.categories.length
+        ? state.categories.map(c => `
+          <div class="list-item row-between">
+            <div>
+              <strong>${escapeHtml(c.bidang)}</strong> — ${escapeHtml(c.kategori)}
+              <div><span class="pill ${c.aktif === 'ya' ? 'pill-ok' : 'pill-warn'}">${c.aktif === 'ya' ? 'Aktif' : 'Nonaktif'}</span></div>
+            </div>
+            ${isAdmin ? `<button class="btn btn-secondary btn-sm" onclick="toggleKat(${c.rowIndex}, '${c.aktif === 'ya' ? 'tidak' : 'ya'}')">${c.aktif === 'ya' ? 'Nonaktifkan' : 'Aktifkan'}</button>` : ''}
+          </div>`).join('')
+        : '<span class="muted">Belum ada kategori di event ini.</span>';
     }
 
     window.toggleKat = async (rowIndex, nextState) => {
       try {
         await apiCall('toggleCategory', { rowIndex, aktif: nextState });
-        loadCategories();
+        refreshBootstrap();
       } catch (err) {
         showMsg('katMsg', err.message, 'danger');
       }
@@ -667,51 +1078,46 @@
       try {
         await apiCall('addCategory', {
           bidang: $('katBidang').value.trim(),
-          pos: $('katPos').value.trim()
+          kategori: $('katNama').value.trim()
         });
-        $('katPos').value = '';
-        showMsg('katMsg', 'Kategori ditambahkan.', 'success');
-        loadCategories();
+        $('katNama').value = '';
+        showMsg('katMsg', 'Kategori berhasil ditambahkan!', 'success');
+        refreshBootstrap();
       } catch (err) {
         showMsg('katMsg', err.message, 'danger');
       }
     });
 
-    /* ==================== RESIZE FOTO + OCR TESSERACT.JS ==================== */
+    /* ==================== OCR & SIMPAN PENGELUARAN (PLUS OFFLINE QUEUE) ==================== */
     $('inpFoto').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-
       try {
-        showMsg('ocrStatus', 'Memperkecil gambar nota...', 'info');
+        showMsg('ocrStatus', 'Memperkecil & menajamkan gambar nota...', 'info');
         $('ocrStatus').classList.remove('hidden');
-
-        const resizedDataUrl = await resizeImage(file, 1400, 0.7);
-        state.notaBase64 = resizedDataUrl;
-        $('previewNota').src = resizedDataUrl;
+        const { colorDataUrl, ocrDataUrl } = await processReceiptImage(file, 1400, 0.7);
+        state.notaBase64 = colorDataUrl;
+        $('previewNota').src = colorDataUrl;
         $('previewNota').classList.remove('hidden');
 
+        if (!navigator.onLine) {
+          showMsg('ocrStatus', 'Sedang offline: foto tersimpan, silakan isi detail secara manual.', 'warn');
+          return;
+        }
         showMsg('ocrStatus', 'Memuat OCR Bahasa Indonesia & membaca nota...', 'info');
         await loadTesseractCdn();
-
-        const { data: { text } } = await Tesseract.recognize(resizedDataUrl, 'ind');
+        const { data: { text } } = await Tesseract.recognize(ocrDataUrl, 'ind');
         const parsed = parseReceiptText(text);
-
         if (parsed.nominal) $('inpNominal').value = parsed.nominal;
         if (parsed.tanggal) $('inpTanggal').value = parsed.tanggal;
         if (parsed.vendor) $('inpVendor').value = parsed.vendor;
-
-        showMsg(
-          'ocrStatus',
-          'OCR selesai! Mohon periksa dan perbaiki Nominal, Tanggal, serta Nama Toko sebelum menekan Simpan.',
-          'success'
-        );
+        showMsg('ocrStatus', 'OCR selesai! Periksa & edit hasil sebelum menekan Simpan.', 'success');
       } catch (err) {
-        showMsg('ocrStatus', 'OCR gagal membaca otomatis, silakan isi form secara manual.', 'danger');
+        showMsg('ocrStatus', 'OCR gagal membaca otomatis, silakan isi manual.', 'danger');
       }
     });
 
-    function resizeImage(file, maxSide, quality) {
+    function processReceiptImage(file, maxSide, quality) {
       return new Promise((resolve, reject) => {
         const img = new Image();
         const reader = new FileReader();
@@ -719,18 +1125,23 @@
         reader.onerror = reject;
         img.onload = () => {
           let { width, height } = img;
-          if (width > height && width > maxSide) {
-            height = Math.round((height * maxSide) / width);
-            width = maxSide;
-          } else if (height >= width && height > maxSide) {
-            width = Math.round((width * maxSide) / height);
-            height = maxSide;
-          }
+          if (width > height && width > maxSide) { height = Math.round((height * maxSide) / width); width = maxSide; }
+          else if (height >= width && height > maxSide) { width = Math.round((width * maxSide) / height); height = maxSide; }
           const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', quality));
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const colorDataUrl = canvas.toDataURL('image/jpeg', quality);
+
+          const imgData = ctx.getImageData(0, 0, width, height);
+          const d = imgData.data;
+          for (let i = 0; i < d.length; i += 4) {
+            let gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+            gray = Math.min(255, Math.max(0, (gray - 128) * 1.45 + 128));
+            d[i] = d[i + 1] = d[i + 2] = gray;
+          }
+          ctx.putImageData(imgData, 0, 0);
+          resolve({ colorDataUrl, ocrDataUrl: canvas.toDataURL('image/jpeg', 0.85) });
         };
         reader.readAsDataURL(file);
       });
@@ -741,168 +1152,279 @@
       return new Promise((resolve, reject) => {
         const s = document.createElement('script');
         s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
-        s.onload = resolve;
-        s.onerror = reject;
+        s.onload = resolve; s.onerror = reject;
         document.head.appendChild(s);
       });
     }
 
     function parseReceiptText(raw) {
-      const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
       let vendor = '';
       for (const line of lines.slice(0, 4)) {
         if (line.length >= 3 && !/^\d+$/.test(line) && !/^(nota|struk|invoice|receipt|jl\.|jalan)/i.test(line)) {
-          vendor = line.slice(0, 50);
-          break;
+          vendor = line.slice(0, 50); break;
         }
       }
-
-      // Cari tanggal format dd/mm/yyyy, dd-mm-yyyy, atau yyyy-mm-dd
       let tanggal = '';
-      const dateMatch = raw.match(/(\d{4})[-\/](\d{2})[-\/](\d{2})|(\d{2})[-\/](\d{2})[-\/](\d{4})/);
-      if (dateMatch) {
-        if (dateMatch[1]) tanggal = `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`;
-        else tanggal = `${dateMatch[6]}-${dateMatch[5]}-${dateMatch[4]}`;
-      }
-
-      // Cari baris TOTAL / JUMLAH / BAYAR terlebih dahulu, jika tidak ada ambil angka rupiah terbesar
+      const dm = raw.match(/(\d{4})[-\/](\d{2})[-\/](\d{2})|(\d{2})[-\/](\d{2})[-\/](\d{4})/);
+      if (dm) tanggal = dm[1] ? `${dm[1]}-${dm[2]}-${dm[3]}` : `${dm[6]}-${dm[5]}-${dm[4]}`;
       let nominal = '';
-      const totalLine = lines.find((l) => /(grand\s*total|total\s*bayar|total|jumlah|tunai)/i.test(l) && /\d/.test(l));
+      const totalLine = lines.find(l => /(grand\s*total|total\s*bayar|total|jumlah|tunai)/i.test(l) && /\d/.test(l));
       const extractNum = (str) => {
         const nums = (str.match(/\d[\d.,]{2,}/g) || [])
-          .map((s) => Number(s.replace(/[.,](?=\d{3}\b)/g, '').replace(/[^\d]/g, '')))
-          .filter((n) => n >= 500 && n < 1000000000);
+          .map(s => Number(s.replace(/[.,](?=\d{3}\b)/g, '').replace(/[^\d]/g, '')))
+          .filter(n => n >= 500 && n < 1000000000);
         return nums.length ? Math.max(...nums) : 0;
       };
       if (totalLine) nominal = extractNum(totalLine) || '';
       if (!nominal) nominal = extractNum(raw) || '';
-
       return { vendor, tanggal, nominal };
     }
 
     $('btnSimpanExp').addEventListener('click', async () => {
+      const payload = {
+        event_id: state.eventId,
+        tanggal: $('inpTanggal').value,
+        bidang: $('inpBidang').value,
+        kategori: $('inpKategori').value,
+        vendor: $('inpVendor').value.trim(),
+        keterangan: $('inpKeterangan').value.trim(),
+        nominal: $('inpNominal').value,
+        dibayar_dari: $('inpDibayar').value,
+        notaBase64: state.notaBase64
+      };
+      if (!payload.tanggal || !payload.kategori || !payload.nominal || Number(payload.nominal) <= 0) {
+        return showMsg('addMsg', 'Tanggal, kategori, dan nominal (> 0) wajib diisi.', 'danger');
+      }
+
       try {
         $('btnSimpanExp').disabled = true;
         showMsg('addMsg', 'Menyimpan pengeluaran...', 'info');
-        await apiCall('addExpense', {
-          tanggal: $('inpTanggal').value,
-          bidang: $('inpBidang').value,
-          pos: $('inpPos').value,
-          vendor: $('inpVendor').value.trim(),
-          keterangan: $('inpKeterangan').value.trim(),
-          nominal: $('inpNominal').value,
-          dibayar_dari: $('inpDibayar').value,
-          notaBase64: state.notaBase64
-        });
+        if (!navigator.onLine) throw new Error('OFFLINE');
+        await apiCall('addExpense', payload);
         showMsg('addMsg', 'Pengeluaran berhasil disimpan!', 'success');
-        $('inpNominal').value = '';
-        $('inpVendor').value = '';
-        $('inpKeterangan').value = '';
-        $('inpFoto').value = '';
-        $('previewNota').classList.add('hidden');
-        $('ocrStatus').classList.add('hidden');
-        state.notaBase64 = '';
-        loadAllData();
+        resetTambahForm();
+        refreshBootstrap();
       } catch (err) {
-        showMsg('addMsg', err.message, 'danger');
+        if (err.isServerRejection) {
+          showMsg('addMsg', err.message, 'danger');
+        } else {
+          // Simpan ke antrean offline IndexedDB
+          await enqueueOffline({ payload, createdAt: Date.now() });
+          await updateOfflineBanner();
+          showMsg('addMsg', 'Sinyal terputus: transaksi disimpan ke Antrean Offline HP dan siap disinkronkan!', 'warn');
+          resetTambahForm();
+        }
       } finally {
         $('btnSimpanExp').disabled = false;
       }
     });
 
-    /* ==================== RIWAYAT & REIMBURS ==================== */
-    async function loadExpenses() {
-      try {
-        const { expenses } = await apiCall('getExpenses');
-        state.expenses = expenses;
-        renderRiwayat();
-        renderReimburs();
-      } catch (err) {
-        $('listRiwayat').innerHTML = `<span style="color:var(--danger)">${escapeHtml(err.message)}</span>`;
-      }
+    function resetTambahForm() {
+      $('inpNominal').value = ''; $('inpVendor').value = ''; $('inpKeterangan').value = '';
+      $('inpFoto').value = ''; $('previewNota').classList.add('hidden');
+      $('ocrStatus').classList.add('hidden'); state.notaBase64 = '';
     }
 
-    $('searchExp').addEventListener('input', renderRiwayat);
-    $('filterReimb').addEventListener('change', renderRiwayat);
+    /* ==================== RIWAYAT, FILTER PERIODE, CSV, & LPJ PDF ==================== */
+    ['searchExp', 'tglDari', 'tglSampai', 'filterBidang', 'filterReimb'].forEach(id => {
+      $(id).addEventListener('input', renderRiwayat);
+      $(id).addEventListener('change', renderRiwayat);
+    });
+
+    function getFilteredExpenses() {
+      const q = $('searchExp').value.toLowerCase().trim();
+      const dari = $('tglDari').value;
+      const sampai = $('tglSampai').value;
+      const fb = $('filterBidang').value || 'semua';
+      const fr = $('filterReimb').value;
+      return state.expenses.filter((e) => {
+        if (dari && e.tanggal < dari) return false;
+        if (sampai && e.tanggal > sampai) return false;
+        if (fb !== 'semua' && e.bidang !== fb) return false;
+        if (fr === 'belum' && !(e.dibayar_dari === 'Pribadi' && e.reimburs === 'Belum')) return false;
+        if (fr === 'sudah' && !(e.dibayar_dari === 'Pribadi' && e.reimburs === 'Sudah')) return false;
+        if (!q) return true;
+        return `${e.vendor} ${e.keterangan} ${e.kategori} ${e.bidang} ${e.nominal}`.toLowerCase().includes(q);
+      });
+    }
 
     function renderRiwayat() {
-      const q = $('searchExp').value.toLowerCase().trim();
-      const f = $('filterReimb').value;
-      const filtered = state.expenses.filter((e) => {
-        if (f === 'belum' && !(e.dibayar_dari === 'Pribadi' && e.reimburs === 'Belum')) return false;
-        if (f === 'sudah' && !(e.dibayar_dari === 'Pribadi' && e.reimburs === 'Sudah')) return false;
-        if (!q) return true;
-        return `${e.vendor} ${e.keterangan} ${e.pos} ${e.bidang} ${e.nominal}`.toLowerCase().includes(q);
-      });
-
+      const filtered = getFilteredExpenses();
+      const isAdmin = state.user && state.user.peran === 'admin';
       $('listRiwayat').innerHTML = filtered.length
         ? filtered.map((e) => {
           const badge = e.dibayar_dari === 'Pribadi'
-            ? `<span class="pill ${e.reimburs === 'Sudah' ? 'pill-ok' : 'pill-warn'}">Pribadi • ${e.reimburs}${e.tgl_reimburs ? ' (' + e.tgl_reimburs + ')' : ''}</span>`
-            : `<span class="pill pill-kas">Kas</span>`;
-          const notaLink = e.nota_url
-            ? `<a class="link" href="${escapeHtml(e.nota_url)}" target="_blank" rel="noopener">Lihat nota</a>`
-            : '';
+            ? `<span class="pill ${e.reimburs === 'Sudah' ? 'pill-ok' : 'pill-warn'}">${e.reimburs === 'Sudah' ? 'CLEAR' : 'REIMBURS'} • ${e.reimburs}${e.tgl_reimburs ? ' (' + e.tgl_reimburs + ')' : ''}</span>`
+            : `<span class="pill pill-kas">${escapeHtml(e.dibayar_dari)}</span>`;
+          const notaLink = e.nota_url ? `<a class="link" href="${escapeHtml(e.nota_url)}" target="_blank" rel="noopener">Lihat nota</a>` : '';
+          const buktiLink = e.bukti_reimburs_url ? `<a class="link" href="${escapeHtml(e.bukti_reimburs_url)}" target="_blank" rel="noopener">Bukti TF</a>` : '';
+          const editBtn = (isAdmin || e.reimburs !== 'Sudah')
+            ? `<button class="btn btn-secondary btn-sm" onclick="openEditModal('${escapeHtml(e.id)}')">Edit</button>` : '';
           return `
             <div class="list-item">
               <div class="row-between">
                 <div>
-                  <strong>${escapeHtml(e.vendor || e.pos)}</strong>
-                  <div class="muted">${escapeHtml(e.tanggal)} • ${escapeHtml(e.bidang)} / ${escapeHtml(e.pos)}</div>
+                  <strong>${escapeHtml(e.vendor || e.kategori)}</strong>
+                  <div class="muted">${escapeHtml(e.tanggal)} • ${escapeHtml(e.bidang)} / ${escapeHtml(e.kategori)}</div>
                 </div>
                 <strong>${rp(e.nominal)}</strong>
               </div>
               <div style="margin: 4px 0; font-size: 13px;">${escapeHtml(e.keterangan)}</div>
               <div class="row-between" style="align-items: center; margin-top: 6px;">
                 ${badge}
-                ${notaLink}
+                <div style="display:flex; gap:8px; align-items:center;">${notaLink}${buktiLink}${editBtn}</div>
               </div>
             </div>`;
         }).join('')
         : '<span class="muted">Tidak ada transaksi yang cocok.</span>';
     }
 
+    $('btnExportCsv').addEventListener('click', () => {
+      const rows = getFilteredExpenses();
+      if (!rows.length) return alert('Tidak ada data untuk diekspor.');
+      const header = ['ID', 'Tanggal', 'Bidang', 'Kategori', 'Vendor', 'Keterangan', 'Nominal', 'Dibayar Dari', 'Reimburs', 'Tgl Reimburs', 'Nota URL', 'Bukti Reimburs URL', 'Oleh'];
+      const esc = (v) => '"' + String(v || '').replace(/"/g, '""') + '"';
+      const lines = [header.join(',')].concat(rows.map(e => [
+        e.id, e.tanggal, e.bidang, e.kategori, e.vendor, e.keterangan,
+        e.nominal, e.dibayar_dari, e.reimburs, e.tgl_reimburs, e.nota_url, e.bukti_reimburs_url, e.oleh
+      ].map(esc).join(',')));
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' }));
+      a.download = `FinStage-${state.eventName || 'LPJ'}-${todayStr()}.csv`;
+      a.click();
+    });
+
+    $('btnPrintLpj').addEventListener('click', () => {
+      const rows = getFilteredExpenses();
+      const d = state.dashboard || {};
+      const totalFilter = rows.reduce((s, r) => s + r.nominal, 0);
+      const summaryHtml = d.isAdmin
+        ? `<p>Total Modal: <strong>${rp(d.totalModal)}</strong> | Total Belanja Riil: <strong>${rp(d.totalBelanjaRiil)}</strong> | Sisa Kas Event: <strong>${rp(d.sisaEvent)}</strong></p>`
+        : `<p>Dana Diterima: <strong>${rp(d.danaDiterima)}</strong> | Terpakai Kas PIC: <strong>${rp(d.terpakaiPic)}</strong> | Sisa Kas PIC: <strong>${rp(d.sisaPic)}</strong></p>`;
+
+      $('printArea').innerHTML = `
+        <h2>Laporan Pertanggungjawaban Keuangan — ${escapeHtml(state.eventName)}</h2>
+        <p style="font-size:12px;">FinStage • Powered by Baam Entertainment | Dicetak: ${todayStr()} oleh ${escapeHtml(state.user.nama)}</p>
+        ${summaryHtml}
+        <table>
+          <thead><tr><th>Tanggal</th><th>Bidang</th><th>Kategori</th><th>Vendor / Keterangan</th><th>Sumber</th><th>Nominal</th></tr></thead>
+          <tbody>
+            ${rows.map(r => `<tr>
+              <td>${escapeHtml(r.tanggal)}</td><td>${escapeHtml(r.bidang)}</td><td>${escapeHtml(r.kategori)}</td>
+              <td>${escapeHtml(r.vendor ? r.vendor + ' — ' : '')}${escapeHtml(r.keterangan)}</td>
+              <td>${escapeHtml(r.dibayar_dari)}${r.reimburs ? ' (' + r.reimburs + ')' : ''}</td>
+              <td style="text-align:right;">${rp(r.nominal)}</td>
+            </tr>`).join('')}
+            <tr><th colspan="5" style="text-align:right;">TOTAL TERFILTER</th><th style="text-align:right;">${rp(totalFilter)}</th></tr>
+          </tbody>
+        </table>`;
+      window.print();
+    });
+
+    /* ==================== EDIT & REIMBURS + BUKTI TRANSFER ==================== */
+    window.openEditModal = (id) => {
+      const item = state.expenses.find(e => e.id === id);
+      if (!item) return;
+      showMsg('editMsg', '', 'info');
+      $('editId').value = item.id; $('editTanggal').value = item.tanggal;
+      $('editNominal').value = item.nominal; $('editVendor').value = item.vendor;
+      $('editKeterangan').value = item.keterangan;
+
+      const isAdmin = state.user.peran === 'admin';
+      const bidangList = isAdmin ? [...new Set(state.categories.filter(c => c.aktif === 'ya').map(c => c.bidang))] : [state.user.bidang];
+      $('editBidang').innerHTML = bidangList.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('');
+      $('editBidang').value = item.bidang;
+      $('editBidang').disabled = !isAdmin;
+      populateKategoriDropdown('editBidang', 'editKategori');
+      $('editKategori').value = item.kategori;
+      $('modalEdit').classList.remove('hidden');
+    };
+    $('btnBatalEdit').addEventListener('click', () => $('modalEdit').classList.add('hidden'));
+    $('btnSimpanEdit').addEventListener('click', async () => {
+      try {
+        $('btnSimpanEdit').disabled = true;
+        await apiCall('editExpense', {
+          id: $('editId').value, tanggal: $('editTanggal').value,
+          bidang: $('editBidang').value, kategori: $('editKategori').value,
+          vendor: $('editVendor').value.trim(), keterangan: $('editKeterangan').value.trim(),
+          nominal: $('editNominal').value
+        });
+        $('modalEdit').classList.add('hidden');
+        refreshBootstrap();
+      } catch (err) {
+        showMsg('editMsg', err.message, 'danger');
+      } finally {
+        $('btnSimpanEdit').disabled = false;
+      }
+    });
+
     function renderReimburs() {
-      const pribadi = state.expenses.filter((e) => e.dibayar_dari === 'Pribadi');
-      const totalBelum = pribadi.filter((e) => e.reimburs === 'Belum').reduce((s, e) => s + e.nominal, 0);
+      const pribadi = state.expenses.filter(e => e.dibayar_dari === 'Pribadi');
+      const totalBelum = pribadi.filter(e => e.reimburs === 'Belum').reduce((s, e) => s + e.nominal, 0);
       $('reimbTotalBelum').textContent = rp(totalBelum);
 
       const isAdmin = state.user.peran === 'admin';
       $('listReimburs').innerHTML = pribadi.length
-        ? pribadi.map((e) => `
+        ? pribadi.map(e => `
           <div class="list-item">
             <div class="row-between">
               <div>
-                <strong>${escapeHtml(e.vendor || e.pos)}</strong>
+                <strong>${escapeHtml(e.vendor || e.kategori)}</strong>
                 <div class="muted">${escapeHtml(e.tanggal)} • ${escapeHtml(e.bidang)} • ${escapeHtml(e.oleh)}</div>
               </div>
               <strong>${rp(e.nominal)}</strong>
             </div>
             <div class="row-between" style="align-items: center; margin-top: 6px;">
               <span class="pill ${e.reimburs === 'Sudah' ? 'pill-ok' : 'pill-warn'}">
-                ${e.reimburs === 'Sudah' ? 'Sudah diganti (' + e.tgl_reimburs + ')' : 'Belum diganti'}
+                ${e.reimburs === 'Sudah' ? 'CLEAR • ' + e.tgl_reimburs : 'PENDING'}
               </span>
-              ${isAdmin && e.reimburs === 'Belum'
-                ? `<button class="btn btn-success btn-sm" onclick="tandaiReimb('${escapeHtml(e.id)}')">Tandai Sudah Diganti</button>`
-                : ''}
+              <div style="display:flex; gap:8px; align-items:center;">
+                ${e.bukti_reimburs_url ? `<a class="link" href="${escapeHtml(e.bukti_reimburs_url)}" target="_blank" rel="noopener">Lihat Bukti TF</a>` : ''}
+                ${isAdmin && e.reimburs === 'Belum' ? `<button class="btn btn-success btn-sm" onclick="openReimbModal('${escapeHtml(e.id)}')">Proses Reimburs</button>` : ''}
+              </div>
             </div>
           </div>`).join('')
-        : '<span class="muted">Belum ada pengeluaran dari dana pribadi.</span>';
+        : '<span class="muted">Belum ada pengeluaran dana pribadi.</span>';
     }
 
-    window.tandaiReimb = async (id) => {
-      const tgl = prompt('Masukkan tanggal penggantian (YYYY-MM-DD):', todayStr());
-      if (!tgl) return;
-      try {
-        await apiCall('markReimbursed', { id, tgl_reimburs: tgl });
-        showMsg('reimbMsg', 'Status reimburs diperbarui.', 'success');
-        loadAllData();
-      } catch (err) {
-        showMsg('reimbMsg', err.message, 'danger');
-      }
+    window.openReimbModal = (id) => {
+      $('reimbId').value = id;
+      $('reimbTgl').value = todayStr();
+      $('reimbBukti').value = '';
+      $('reimbPreview').classList.add('hidden');
+      state.buktiReimbBase64 = '';
+      showMsg('reimbModalMsg', '', 'info');
+      $('modalReimb').classList.remove('hidden');
     };
+    $('btnBatalReimb').addEventListener('click', () => $('modalReimb').classList.add('hidden'));
+    $('reimbBukti').addEventListener('change', async (e) => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const { colorDataUrl } = await processReceiptImage(f, 1200, 0.7);
+      state.buktiReimbBase64 = colorDataUrl;
+      $('reimbPreview').src = colorDataUrl;
+      $('reimbPreview').classList.remove('hidden');
+    });
+    $('btnKonfirmReimb').addEventListener('click', async () => {
+      try {
+        $('btnKonfirmReimb').disabled = true;
+        await apiCall('markReimbursed', {
+          id: $('reimbId').value,
+          tgl_reimburs: $('reimbTgl').value,
+          buktiBase64: state.buktiReimbBase64
+        });
+        $('modalReimb').classList.add('hidden');
+        showMsg('reimbMsg', 'Reimburs ditandai lunas!', 'success');
+        refreshBootstrap();
+      } catch (err) {
+        showMsg('reimbModalMsg', err.message, 'danger');
+      } finally {
+        $('btnKonfirmReimb').disabled = false;
+      }
+    });
 
-    /* ==================== AKUN & TEMA ==================== */
+    /* ==================== AKUN & KELOLA PENGGUNA ==================== */
     $('btnToggleTheme').addEventListener('click', () => {
       const curr = document.documentElement.getAttribute('data-theme');
       const next = curr === 'dark' ? 'light' : 'dark';
@@ -911,15 +1433,39 @@
     });
 
     $('btnGantiPin').addEventListener('click', async () => {
-      const pinBaru = $('inpPinBaru').value.trim();
       try {
-        await apiCall('changePin', { pinBaru });
-        state.pin = pinBaru;
-        localStorage.setItem('konser_pin', pinBaru);
+        await apiCall('changePin', { pinBaru: $('inpPinBaru').value.trim() });
         $('inpPinBaru').value = '';
-        showMsg('pinMsg', 'PIN berhasil diubah.', 'success');
+        showMsg('pinMsg', 'PIN berhasil diubah & di-hash.', 'success');
       } catch (err) {
         showMsg('pinMsg', err.message, 'danger');
+      }
+    });
+
+    async function loadUsersList() {
+      try {
+        const { users } = await apiCall('getUsers');
+        $('listUsers').innerHTML = users.map(u => `
+          <div class="list-item row-between">
+            <div><strong>${escapeHtml(u.nama)}</strong> (${escapeHtml(u.peran)})<div class="muted">${escapeHtml(u.email)} • ${escapeHtml(u.bidang)}</div></div>
+          </div>`).join('');
+      } catch (e) {}
+    }
+
+    $('btnSimpanUser').addEventListener('click', async () => {
+      try {
+        await apiCall('saveUser', {
+          target_email: $('usrEmail').value.trim(),
+          nama: $('usrNama').value.trim(),
+          pin: $('usrPin').value.trim(),
+          peran: $('usrPeran').value,
+          bidang: $('usrBidang').value.trim()
+        });
+        $('usrEmail').value = ''; $('usrNama').value = ''; $('usrPin').value = '';
+        showMsg('userMsg', 'Data pengguna berhasil disimpan!', 'success');
+        loadUsersList();
+      } catch (err) {
+        showMsg('userMsg', err.message, 'danger');
       }
     });
 
