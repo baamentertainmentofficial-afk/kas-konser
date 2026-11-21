@@ -400,8 +400,7 @@
 
   <script>
     // Tempel URL Web App Google Apps Script Anda di bawah ini setelah Deploy:
-    https://script.google.com/macros/s/AKfycbyMiPNkJoqPeSEoU7M2KYs65BupkZGDtE5QKxXpB2mefIADpPA54gmLlGkymPpkIRyD/exec
-
+    const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbyMiPNkJoqPeSEoU7M2KYs65BupkZGDtE5QKxXpB2mefIADpPA54gmLlGkymPpkIRyD/exec';
     const state = {
       apiUrl: localStorage.getItem('konser_api_url') || DEFAULT_API_URL,
       email: localStorage.getItem('konser_email') || '',
